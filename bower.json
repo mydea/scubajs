@@ -1,6 +1,6 @@
 {
   "name": "scuba.js",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "homepage": "https://github.com/mydea/scubajs",
   "authors": [
     "Francesco Novy <francesconovy@gmail.com>"
@@ -22,8 +22,6 @@
     "node_modules",
     "bower_components",
     "test",
-    "tests",
-    "docs",
     "doc"
   ],
   "dependencies": {
