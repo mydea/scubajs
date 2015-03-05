@@ -11,18 +11,21 @@
 </head>
 <body class="language-javascript">
 
-<ul class="nav">
-	<li><a href="#what-does-it-dp">What does it do?</a></li>
-	<li><a href="#how-does-it-work">How does it work?</a></li>
-	<li><a href="#prerequisites">Prerequisites</a></li>
-	<li><a href="#usage">Usage</a></li>
-	<li><a href="#options">Options</a></li>
-	<li><a href="#downsync">Down Sync</a></li>
-	<li><a href="#routes">Routes</a></li>
-	<li><a href="#localdb">LocalDB</a></li>
-	<li><a href="#events">Events</a></li>
-	<li><a href="#miscellaneous">Miscellaneous</a></li>
-</ul>
+<nav class="nav__container">
+	<h2>scuba.js</h2>
+	<ul class="nav">
+		<li><a href="#what-does-it-dp">What does it do?</a></li>
+		<li><a href="#how-does-it-work">How does it work?</a></li>
+		<li><a href="#prerequisites">Prerequisites</a></li>
+		<li><a href="#usage">Usage</a></li>
+		<li><a href="#options">Options</a></li>
+		<li><a href="#downsync">Down Sync</a></li>
+		<li><a href="#routes">Routes</a></li>
+		<li><a href="#localdb">LocalDB</a></li>
+		<li><a href="#events">Events</a></li>
+		<li><a href="#miscellaneous">Miscellaneous</a></li>
+	</ul>
+</nav>
 
 <div class="wrapper">
 
@@ -118,7 +121,9 @@
 	noConflict: false,
 	queueIfError: "continue",
 	queueIfError: "continue",
-	defaultFormat: function(data) { return data; }
+	defaultFormat: function(data) { return data; },
+	downSync: [], // See section "Down Sync" for details
+	routes: [] // See section "Routes" for details
 });</code></pre>
 
 	<h3>syncRetry</h3>
@@ -146,27 +151,27 @@
 	</p>
 	<ul>
 		<li>
-			<strong>GET /users</strong>
-			<br/>&rarr; <code>data: function() {return this.findAll("users");}</code>
+			<strong>GET /users</strong> &rarr;
+			<pre><code>data: function() {return this.findAll("users");}</code></pre>
 		</li>
 		<li>
-			<strong>GET /users/1</strong>
-			<br/>&rarr; <code>data: function(options, id) {return this.findById("users", id);}</code>
+			<strong>GET /users/1</strong> &rarr;
+			<pre><code>data: function(options, id) {return this.findById("users", id);}</code></pre>
 		</li>
 		<li>
-			<strong>POST /users</strong>
-			<br/>&rarr; <code>action: function(options) {return this.rowInsert("users", options.data);}</code>
-			<br/>&rarr; <code>data: function(options) {return this.findById("users", options.data.id);}</code>
+			<strong>POST /users</strong> &rarr;
+			<pre><code>action: function(options) {return this.rowInsert("users", options.data);}
+data: function(options) {return this.findById("users", options.data.id);}</code></pre>
 		</li>
 		<li>
-			<strong>PUT /users/1</strong>
-			<br/>&rarr; <code>action: function(opt, id) {return this.rowUpdate("users", id, opt.data);}</code>
-			<br/>&rarr; <code>data: function(options, id) {return this.findById("users", id);}</code>
+			<strong>PUT /users/1</strong> &rarr;
+			<pre><code>action: function(opt, id) {return this.rowUpdate("users", id, opt.data);}
+data: function(options, id) {return this.findById("users", id);}</code></pre>
 		</li>
 		<li>
-			<strong>DELETE /users/1</strong>
-			<br/>&rarr; <code>action: function(opt, id) {return this.rowDelete("users", id);}</code>
-			<br/>&rarr; <code>data: function() {return {};}</code>
+			<strong>DELETE /users/1</strong> &rarr;
+			<pre><code>action: function(opt, id) {return this.rowDelete("users", id);}
+data: function() {return {};}</code></pre>
 		</li>
 	</ul>
 
@@ -224,6 +229,15 @@
 		Determines how data should be formatted by default. If no <code>format()</code> function is specified for a route,
 		the data will be formatted with this function. For details on how to format data, see the <a href="#routes">section "Routes"</a>.
 	</p>
+
+	<h2 id="downsync">Down Sync</h2>
+	<p>
+		In order to be able to work offline, scuba.js needs to download all data that might be needed.
+		This process is called "down sync". When initialising scuba.js, you have to specify one or more down sync routes:
+	</p>
+	<pre><code>var scuba = $.scuba({
+	downSync
+});</code></pre>
 
 	<h2 id="routes">Routes</h2>
 	<p>You have to define the routes your REST-API has. Scuba.js will take the first matching route, and return the according data. Each route has the following attributes:</p>
@@ -542,8 +556,6 @@ route: "/users/!!/comments/!!" // multiple placeholders are possible, too</code>
 	</ul>
 </div>
 
-
-<script src="../bower_components/jquery/dist/jquery.min.js"></script>
 <script src="js/prism.js"></script>
 </body>
 </html>
