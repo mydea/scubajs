@@ -14,7 +14,7 @@
 <nav class="nav__container">
 	<h2>scuba.js</h2>
 	<ul class="nav">
-		<li><a href="#what-does-it-dp">What does it do?</a></li>
+		<li><a href="#what-does-it-do">What does it do?</a></li>
 		<li><a href="#how-does-it-work">How does it work?</a></li>
 		<li><a href="#prerequisites">Prerequisites</a></li>
 		<li><a href="#usage">Usage</a></li>
@@ -33,7 +33,22 @@
 
 	<h2 id="what-does-it-do">What does it do?</h2>
 	<p>
+		Scuba.js is a library which makes it easy to make existing or new REST-based web apps offline capable.
+		It fetches data from the server, saves it locally in IndexedDB, and routes all <code>$.ajax()</code> calls
+		to use the local data. POST, PUT and DELETE requests are stored in a queue and sent to the server in order
+		when the client is back online.
+	</p>
 
+	<p>
+		The main goal of scuba.js was to enable developers to make their web apps offline capable without the need to
+		completely rework their APIs or JavaScript code. If your web app uses <code>$.ajax()</code> for all Ajax calls,
+		you just have to setup scuba.js and everything should work without any further changes!
+	</p>
+
+	<p>
+		If you run into any problems, or need help with scuba's configuration, please feel free to contact me at any time:
+		<br/>E-Mail: <a href="mailto:hello@fnovy.com">hello@fnovy.com</a>
+		<br>Twitter: <a href="http://twitter.com/_fnovy">@_fnovy</a>
 	</p>
 
 	<h2 id="how-does-it-work">How does it work?</h2>
@@ -43,11 +58,11 @@
 			stored in IndexedDB in the browser.
 		</li>
 		<li>
-			When the down sync has finished, scuba will begin to intercept all calls to <code>$.ajax</code>. This means
-			that you don't have to change anything about your code as long as you use $.ajax for all requests.
+			When the down sync has finished, scuba will begin to intercept all calls to <code>$.ajax()</code>. This means
+			that you don't have to change anything about your code as long as you use <code>$.ajax()</code> for all requests.
 		</li>
 		<li>
-			When a call is made to $.ajax, it goes through scuba.js. It will then determine if a matching route has been specified.
+			When a call is made to <code>$.ajax()</code>, it goes through scuba.js. It will then determine if a matching route has been specified.
 		</li>
 		<li>
 			If no matching route is found, the request is made to the server. In this case, scuba.js does nothing.
@@ -122,7 +137,7 @@
 	queueIfError: "continue",
 	queueIfError: "continue",
 	defaultFormat: function(data) { return data; },
-	downSync: [], // See section "Down Sync" for details
+	downSyncRoutes: [], // See section "Down Sync" for details
 	routes: [] // See section "Routes" for details
 });</code></pre>
 
@@ -236,8 +251,92 @@ data: function() {return {};}</code></pre>
 		This process is called "down sync". When initialising scuba.js, you have to specify one or more down sync routes:
 	</p>
 	<pre><code>var scuba = $.scuba({
-	downSync
+	downSyncRoutes: [
+		{
+			url: "http://yourapi.com/downsync",
+			success: function(data) {
+				delete data.meta;
+				return data;
+			}
+		}
+	]
 });</code></pre>
+
+	<p>
+		Each down sync route must have a URL defined from which it should fetch the data.
+		The <code>success()</code> function is optional: By default, the data returned from the URL will be taken as-is.
+		If you want/need to work on the returned data before saving it, you can do this in success.
+	</p>
+	<p>
+		The data returned has to have the following format:
+	</p>
+
+	<pre><code>{
+	model1: [
+		{
+			id: 1,
+			name: "Item 1"
+		},
+		{
+			id: 2,
+			name: "Item 2"
+		}
+	],
+	emptymodel: [],
+	anothermodel: [
+		{
+			id: 1,
+			field1: "test"
+		}
+	]
+}</code></pre>
+
+	<p>
+		Important things to notice:
+	</p>
+	<ul>
+		<li>Each model which might be needed must be included, if the model has no entries yet just use an empty array.</li>
+		<li>
+			Each model has to be wrapped in an object with the name of the model. Scuba.js does no pluralisation for you:
+			if the modelname is <code>users</code>, you can later access the model via <code>this.findAll("users")</code>.
+		</li>
+		<li>
+			Each model needs a field named <code>id</code> with an unique identifier (unique inside of the model).
+			The usage of GUIDs is recommended.
+		</li>
+	</ul>
+
+	<p>
+		You can also use multiple down sync routes, if your API does not provide a route where all data is returned.
+		If multiple routes are specified, the returned data is merged together at the end:
+	</p>
+	<pre><code>downSyncRoutes: [
+	{
+		url: "http://yourapi.com/users",
+		success: function(data) {
+			return {
+				users: data
+			}
+		}
+	},
+	{
+		url: "http://yourapi.com/comments",
+		success: function(data) {
+			return {
+				comments: data
+			}
+		}
+	},
+	{
+		url: "http://yourapi.com/comments_and_users",
+		success: function(data) {
+			return {
+				users: data[0],
+				comments: data[1]
+			}
+		}
+	}
+]</code></pre>
 
 	<h2 id="routes">Routes</h2>
 	<p>You have to define the routes your REST-API has. Scuba.js will take the first matching route, and return the according data. Each route has the following attributes:</p>
@@ -533,7 +632,9 @@ route: "/users/!!/comments/!!" // multiple placeholders are possible, too</code>
 		</li>
 		<li>
 			<code>offlinestatuschange</code> is called whenever the application changes between offline and online status.
-			Its parameter is true if the application is currently offline, elsewise it is false.
+			Its parameter is true if the application is currently offline, elsewise it is false. The application checks
+			the offline status at startup (when the down sync fails, the app is assumed to be offline), and whenever it tries
+			to work the queue.
 		</li>
 	</ul>
 
