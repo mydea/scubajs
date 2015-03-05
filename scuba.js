@@ -1,8 +1,8 @@
 /*!
  * Offline REST
  *
- * Copyright © 2015 Francesco Novy | MIT license | https://github.com/mydea/PikadayResponsive
- * Version 0.0.1
+ * Copyright © 2015 Francesco Novy | MIT license | https://github.com/mydea/scubajs
+ * Version 0.1.2
  */
 (function ($) {
 	var offlineReadyEvent = "offlineready";
@@ -58,7 +58,7 @@
 
 			var hasError = function() {
 				return errorCount >= 3;
-			}
+			};
 
 			/**
 			 * Adds a new element to the queue
@@ -110,7 +110,7 @@
 			 */
 			var getQueue = function() {
 				return items;
-			}
+			};
 
 			var init = function(namespaceSet) {
 				if(typeof namespaceSet === "undefined") {
@@ -131,7 +131,7 @@
 				getQueue: getQueue,
 				queueError: queueError,
 				hasError: hasError
-			}
+			};
 		})();
 
 		/**
@@ -167,7 +167,7 @@
 
 				request.onsuccess = function (e) {
 					var result = e.target.result;
-					if (!!result === false) {
+					if (!result) {
 						// finished
 						deferred.resolve(resultCache);
 						resultCache = null;
@@ -179,8 +179,8 @@
 				};
 
 				request.onerror = function () {
-					deferred.reject("an error occured when trying to load all entries of table " + table)
-				}
+					deferred.reject("an error occured when trying to load all entries of table " + table);
+				};
 
 				return deferred.promise();
 			};
@@ -212,8 +212,8 @@
 				};
 
 				request.onerror = function () {
-					deferred.reject("an error occured when trying to load the entries of table " + table + " with the id " + id)
-				}
+					deferred.reject("an error occured when trying to load the entries of table " + table + " with the id " + id);
+				};
 
 				return deferred.promise();
 			};
@@ -330,7 +330,7 @@
 
 						trans.onerror = function (e) {
 							deferred.reject("error");
-						}
+						};
 					});
 				} else {
 					var trans = db.transaction([table], "readwrite");
@@ -348,7 +348,7 @@
 
 					trans.onerror = function (e) {
 						deferred.reject("error");
-					}
+					};
 				}
 
 				return deferred.promise();
@@ -399,7 +399,7 @@
 
 					trans.onerror = function (e) {
 						deferred.reject("error");
-					}
+					};
 				});
 
 
@@ -439,7 +439,7 @@
 
 					trans.onerror = function (e) {
 						deferred.reject("error");
-					}
+					};
 
 				});
 
@@ -613,17 +613,17 @@
 					deferred.resolve([]);
 
 					return deferred.promise();
-				}
+				};
 			}
 			if(typeof settings.routes[i].format !== "function") {
 				settings.routes[i].format = function(data) {
 					return data;
-				}
+				};
 			}
 			if(typeof settings.routes[i].action !== "function") {
 				settings.routes[i].action = function() {
 					return null;
-				}
+				};
 			}
 		}
 
@@ -743,13 +743,14 @@
 			for(i = 0; i < models.length; i++) {
 				(function() {
 					var m = models[i], tempUrl;
+					var j;
 
 					// GET /model
 					tempUrl = settings.apiBaseUrl+"/"+m;
 
 					// Check if the route already exists
-					for(var j=0; j<routes.length; j++) {
-						if(routes[j].type == "get" && routes[j].route == tempUrl) {
+					for(j=0; j<routes.length; j++) {
+						if(routes[j].type.toLowerCase() === "get" && routes[j].route.toLowerCase() === tempUrl.toLowerCase()) {
 							return;
 						}
 					}
@@ -766,8 +767,8 @@
 					tempUrl = settings.apiBaseUrl+"/"+m+"/!!";
 
 					// Check if the route already exists
-					for(var j=0; j<routes.length; j++) {
-						if(routes[j].type == "get" && routes[j].route == tempUrl) {
+					for(j=0; j<routes.length; j++) {
+						if(routes[j].type.toLowerCase() === "get" && routes[j].route.toLowerCase() === tempUrl.toLowerCase()) {
 							return;
 						}
 					}
@@ -784,8 +785,8 @@
 					tempUrl = settings.apiBaseUrl+"/"+m+"";
 
 					// Check if the route already exists
-					for(var j=0; j<routes.length; j++) {
-						if(routes[j].type == "post" && routes[j].route == tempUrl) {
+					for(j=0; j<routes.length; j++) {
+						if(routes[j].type.toLowerCase() === "post" && routes[j].route.toLowerCase() === tempUrl.toLowerCase()) {
 							return;
 						}
 					}
@@ -805,8 +806,8 @@
 					tempUrl = settings.apiBaseUrl+"/"+m+"/!!";
 
 					// Check if the route already exists
-					for(var j=0; j<routes.length; j++) {
-						if(routes[j].type == "put" && routes[j].route == tempUrl) {
+					for(j=0; j<routes.length; j++) {
+						if(routes[j].type.toLowerCase() === "put" && routes[j].route.toLowerCase() === tempUrl.toLowerCase()) {
 							return;
 						}
 					}
@@ -826,8 +827,8 @@
 					tempUrl = settings.apiBaseUrl+"/"+m+"/!!";
 
 					// Check if the route already exists
-					for(var j=0; j<routes.length; j++) {
-						if(routes[j].type == "delete" && routes[j].route == tempUrl) {
+					for(j=0; j<routes.length; j++) {
+						if(routes[j].type.toLowerCase() === "delete" && routes[j].route.toLowerCase() === tempUrl.toLowerCase()) {
 							return;
 						}
 					}
@@ -959,7 +960,7 @@
 
 			// Queue Error, handle it...
 			if(Queue.hasError()) {
-				if(settings.queueIfError == "continue") {
+				if(settings.queueIfError.toLowerCase() === "continue") {
 					_emitSyncEvent();
 					_emitQueueStatusEvent();
 					Queue.dequeue();
@@ -999,7 +1000,7 @@
 				_emitQueueStatusEvent();
 			}, function(e) {
 				// If readystate is 0, app is offline
-				if(e.readyState == 0) {
+				if(e.readyState === 0) {
 					queueIsWorking = false;
 					clearTimeout(queueTimer);
 					queueTimer = setTimeout(_workQueue, settings.syncRetry);
@@ -1087,7 +1088,7 @@
 			}
 
 			// set default values
-			if (typeof options.type === "undefined" || (options.type != "post" && options.type != "put" && options.type != "update")) {
+			if (typeof options.type === "undefined" || (options.type.toLowerCase() !== "post" && options.type.toLowerCase() !== "put" && options.type.toLowerCase() !== "update")) {
 				options.type = "get";
 			} else {
 				options.type = options.type.toLowerCase();
@@ -1301,7 +1302,7 @@
 			}
 
 			return data1;
-		}
+		};
 
 		/**
 		 * Parses an URL and separates it into its different parts
@@ -1332,7 +1333,7 @@
 				path: path,
 				pathSegments: pathSegments
 
-			}
+			};
 		};
 
 		/**
@@ -1350,7 +1351,7 @@
 			var routeParts = _parseURI(route);
 			var i, j, tempParts, regex, matches;
 
-			for (var i = 0; i < routes.length; i++) {
+			for (i = 0; i < routes.length; i++) {
 				// Routes must match http type!
 				if (routes[i].type.toLowerCase() !== type.toLowerCase()) {
 					continue;
@@ -1360,7 +1361,7 @@
 				// Build a regex
 				for (j = 0; j < tempParts.pathSegments.length; j++) {
 					// Replace !! with capturing group
-					if (tempParts.pathSegments[j] == "!!") {
+					if (tempParts.pathSegments[j] === "!!") {
 						tempParts.pathSegments[j] = "(\\w+|\\d+)";
 					}
 				}
@@ -1368,7 +1369,8 @@
 				regex = "^" + tempParts.pathSegments.join("\\/") + "$";
 				regex = new RegExp(regex, "gi");
 
-				if (matches = regex.exec(routeParts.path)) {
+				matches = regex.exec(routeParts.path);
+				if (matches) {
 					return {
 						route: routes[i],
 						params: matches
