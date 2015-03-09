@@ -135,7 +135,6 @@
 	namespace: "scuba",
 	noConflict: false,
 	queueIfError: "continue",
-	queueIfError: "continue",
 	defaultFormat: function(data) { return data; },
 	downSyncRoutes: [], // See section "Down Sync" for details
 	routes: [] // See section "Routes" for details
@@ -551,7 +550,7 @@ route: "/users/!!/comments/!!" // multiple placeholders are possible, too</code>
 		lastname: "Smith",
 		"is_admin": true
 	}); // Only entries where all attributes match are returned
-	this.findCusom(table, function(item) {
+	this.findCustom(table, function(item) {
 		// loops through all items of the table
 		// and include only the ones where this function returns true
 		return item.is_admin;
