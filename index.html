@@ -383,8 +383,21 @@ route: "/users/!!/comments/!!" // multiple placeholders are possible, too</code>
 
 	<h3>data</h3>
 	<p>
-		This is the central function which determines what data should be returned by the call. As parameters, it receives the options of the original ajax-request as first parameter, and eventual route segments from placeholders as the following parameters.
+		This is the central function which determines what data should be returned by the call. As parameters, it receives the options of the original ajax-request as first parameter, and eventual route segments from placeholders as the following parameters. One attribute is added to the options (= the first parameter): A field <code>getParams: {}</code> which contains eventual queryParams added, like <code>/users?admin=1</code>. In the case of GET requests the requests <code>data</code>-option is merged with the query params. This means that a typical options-parameter might look like this:
 	</p>
+
+	<pre><code>{
+	url: "http://yourapi.com/users?admin=1",
+	type: "get",
+	data: {
+		gender: 0
+	},
+	// added by scuba.js:
+	getParams: {
+		gender: 0,
+		admin: 1
+	}
+}</code></pre>
 
 	<p>
 		Inside of the <code>data()</code> function, the LocalDB-object is available via <code>this</code>.
