@@ -1453,8 +1453,7 @@
 		routes: [],
 		namespace: "scuba",
 		noConflict: false,
-
-
+		
 		queueIfError: "continue", // continue, stop, function
 
 		defaultFormat: function (data) {
