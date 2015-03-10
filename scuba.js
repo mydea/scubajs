@@ -238,7 +238,7 @@
 					var filteredData = $.grep(data, function (item) {
 						for (var i in attrs) {
 							if (typeof attrs[i] === "string") {
-								if (attrs[i].toLowerCase() !== item[i].toLowerCase()) {
+								if (attrs[i].toLowerCase() !== (""+item[i]).toLowerCase()) {
 									return false;
 								}
 							} else {
@@ -1138,6 +1138,13 @@
 				}
 			}
 
+			// Add GET params to options
+			reducedOptions["getParams"] = fittingRoute.getParams;
+			// For GET requests, add the data field to the getParams
+			if(options.type === "get" && options.data) {
+				reducedOptions["getParams"] = $.extend({}, reducedOptions["getParams"],  options.data);
+			}
+
 			// Get the params
 			var params = fittingRoute.params.slice(1);
 			params.unshift(reducedOptions);
@@ -1312,6 +1319,11 @@
 		 * @private
 		 */
 		var _parseURI = function (uri) {
+			// If apiBaseUrl is set, all uris without http:// are prefixed with it
+			if(settings.apiBaseUrl && uri.indexOf("http") !== 0) {
+				uri = settings.apiBaseUrl + uri;
+			}
+
 			var parser = document.createElement('a');
 			parser.href = uri;
 
@@ -1349,13 +1361,16 @@
 		var _getRoute = function (route, type) {
 			var routes = settings.routes;
 			var routeParts = _parseURI(route);
-			var i, j, tempParts, regex, matches;
+			var i, j, k, tempParts, regex, matches, getParams = {}, tmp;
 
 			for (i = 0; i < routes.length; i++) {
+
 				// Routes must match http type!
-				if (routes[i].type.toLowerCase() !== type.toLowerCase()) {
+				// if type == "any" then any type is matched
+				if (routes[i].type.toLowerCase() !== type.toLowerCase() && routes[i].type.toLowerCase() !== "any") {
 					continue;
 				}
+
 				tempParts = _parseURI(routes[i].route);
 
 				// Build a regex
@@ -1371,9 +1386,22 @@
 
 				matches = regex.exec(routeParts.path);
 				if (matches) {
+
+					// make key-value pairs from get params
+					tmp = routeParts.searchParams;
+					if(tmp.length > 0) {
+						tmp = tmp.substr(1);
+						tmp = tmp.split("&");
+
+						for(k = 0; k<tmp.length; k++) {
+							getParams[tmp[k].split("=")[0]] = tmp[k].split("=")[1] || null;
+						}
+					}
+
 					return {
 						route: routes[i],
-						params: matches
+						params: matches,
+						getParams: getParams
 					};
 				}
 			}

@@ -134,3 +134,139 @@ QUnit.test("default routes are inserted correctly", function (assert) {
 		});
 	});
 });
+
+QUnit.test("Hosts are matched correctly", function (assert) {
+	var done = assert.async();
+	var countDone = 0;
+
+	var scuba = $.scuba({
+		namespace: generateDatabase(),
+		noConflict: true,
+		downSyncRoutes: [
+			{
+				url: "http://localhost:8000/test/api/users.json"
+			}
+		],
+		apiBaseUrl: "http://testapi.com/test/api",
+		routes: [
+			{
+				route: "/users",
+				type: "get",
+				data: function () {
+					var data = this.findAll("users");
+					return data;
+				}
+			},
+			{
+				route: "http://testapi.com/test/api/users",
+				type: "get",
+				data: function () {
+					var data = this.findAll("users");
+					return data;
+				}
+			}
+		]
+	});
+
+	scuba.onofflineready(function() {
+		scuba.ajax({
+			url: "/users",
+			type: "get",
+			success: function (data) {
+				assert.equal(data.length, 5, "5 users are returned when route AND $.ajax() lack a host");
+
+				if(++countDone == 3) {
+					done();
+					scuba.cleanUp();
+				}
+			}
+		});
+
+		scuba.ajax({
+			url: "http://testapi.com/test/api/users",
+			type: "get",
+			success: function (data) {
+				assert.equal(data.length, 5, "5 users are returned when only the route lacks a host");
+
+				if(++countDone == 3) {
+					done();
+					scuba.cleanUp();
+				}
+			}
+		});
+
+		scuba.ajax({
+			url: "/users",
+			type: "get",
+			success: function (data) {
+				assert.equal(data.length, 5, "5 users are returned when only $.ajax() lacks a host");
+
+				if(++countDone == 3) {
+					done();
+					scuba.cleanUp();
+				}
+			}
+		});
+	});
+});
+
+QUnit.test("Get parameters are parsed correctly", function (assert) {
+	var done = assert.async();
+	var countDone = 0;
+
+	var scuba = $.scuba({
+		namespace: generateDatabase(),
+		noConflict: true,
+		downSyncRoutes: [
+			{
+				url: "http://localhost:8000/test/api/users.json"
+			}
+		],
+		routes: [
+			{
+				route: "http://localhost:8000/test/api/users",
+				type: "get",
+				data: function (options) {
+					var searchOptions = {
+						gender: options.getParams.gender
+					};
+					
+					var data = this.findByAttributes("users", searchOptions);
+					return data;
+				}
+			}
+		]
+	});
+
+	scuba.onofflineready(function() {
+		scuba.ajax({
+			url: "http://localhost:8000/test/api/users?gender=1&admin",
+			type: "get",
+			success: function (data) {
+				assert.equal(data.length, 2, "2 users are returned via GET parameters");
+
+				if(++countDone == 2) {
+					done();
+					scuba.cleanUp();
+				}
+			}
+		});
+
+		scuba.ajax({
+			url: "http://localhost:8000/test/api/users?admin=2",
+			data: {
+				gender: 1
+			},
+			type: "get",
+			success: function (data) {
+				assert.equal(data.length, 2, "2 users are returned via GET parameter transferred via the data field");
+
+				if(++countDone == 2) {
+					done();
+					scuba.cleanUp();
+				}
+			}
+		});
+	});
+
+});
