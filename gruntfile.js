@@ -74,6 +74,13 @@ module.exports = function (grunt) {
 	// 4. Where we tell Grunt what to do when we type "grunt" into the terminal.
 	grunt.registerTask('default', ["uglify"]);
 
+	grunt.registerTask("build", [
+		"connect:test",
+		"jshint",
+		"qunit:all",
+		"uglify"
+	]);
+
 	grunt.registerTask("test", [
 		"connect:test",
 		"jshint",
