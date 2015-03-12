@@ -1074,8 +1074,6 @@
 				return ajaxOnline.apply($, arguments);
 			}
 
-			//var deferred = new $.Deferred();
-
 			// parse options
 			var options = {};
 			if (typeof arguments[0] === "string") {
@@ -1138,16 +1136,17 @@
 				}
 			}
 
-			// Add GET params to options
-			reducedOptions["getParams"] = fittingRoute.getParams;
-			// For GET requests, add the data field to the getParams
-			if(options.type === "get" && options.data) {
-				reducedOptions["getParams"] = $.extend({}, reducedOptions["getParams"],  options.data);
-			}
-
 			// Get the params
 			var params = fittingRoute.params.slice(1);
 			params.unshift(reducedOptions);
+
+			// Add GET params to options
+			var scubaOptions = $.extend({}, reducedOptions);
+			scubaOptions.getParams = fittingRoute.getParams;
+			// For GET requests, add the data field to the getParams
+			if(options.type === "get" && options.data) {
+				scubaOptions.getParams = $.extend({}, scubaOptions.getParams,  options.data);
+			}
 
 			var actionPromise = null;
 
@@ -1172,37 +1171,75 @@
 
 			// Wrap this in a function so it can also be run later if an action has to be performed before
 			var getData = function (actionPromise) {
-				var deferred = $.Deferred();
+
+				// mock the jqXHR object
+				var jqXHR = $.Deferred();
+				jqXHR.responseJSON = {};
+				jqXHR.responseText = "";
+				jqXHR.readyState = 0;
+				jqXHR.statusText = "OK";
+				jqXHR.status = 200;
+				jqXHR.getAllResponseHeaders = function() {
+
+				};
+				jqXHR.setRequestHeader = function(name, value) {
+
+				};
+				jqXHR.getResponseHeader = function(name) {
+
+				};
+				jqXHR.statusCode = function() {
+					return this.status;
+				};
+				jqXHR.abort = function() {
+
+				};
+
+				scubaOptions.jqXHR = jqXHR;
 
 				var getDataFunction = function () {
 					var params = fittingRoute.params.slice(1);
 					var response;
 
-					params.unshift(reducedOptions);
+					params.unshift(scubaOptions);
 
 					// route found, load specified data
 					var data = fittingRoute.route.data.apply(LocalDB, params);
 
+					// Get the status
+					if(typeof fittingRoute.route.status === "function") {
+
+					}
+
 					// If data returns empty, return "null"
 					if(!data) {
-						response = fittingRoute.route.format(null, reducedOptions);
+						response = fittingRoute.route.format(null, scubaOptions);
 
-						deferred.resolve(response);
-						options.success(response);
-						options.complete(response);
+						jqXHR.readyState = 4;
+						jqXHR.resolve(response);
+						options.success(response, "success", jqXHR);
+						options.complete(jqXHR, "success");
 						return;
 					}
 
 					data.then(function (data) {
-						response = fittingRoute.route.format(data, reducedOptions);
+						response = fittingRoute.route.format(data, scubaOptions);
 
-						deferred.resolve(response);
-						options.success(response);
-						options.complete(response);
+						jqXHR.readyState = 4;
+						jqXHR.resolve(response);
+						options.success(response, "success", jqXHR);
+						options.complete(jqXHR, "success");
 					}).fail(function (e) {
-						deferred.reject(e);
-						options.error(e);
-						options.complete(e);
+						// Automatically add error message to body, if it is an object
+						if(typeof e === "object") {
+							jqXHR.responseText = JSON.stringify(e);
+							jqXHR.responseJSON = e;
+						}
+
+						jqXHR.readyState = 4;
+						jqXHR.reject(jqXHR, "error", e);
+						options.error(jqXHR, "error", e);
+						options.complete(jqXHR, "error", e);
 
 						console.error("error loading data");
 					});
@@ -1216,7 +1253,7 @@
 					getDataFunction();
 				}
 
-				return deferred;
+				return jqXHR;
 			};
 
 			var deferred = getData(actionPromise);
@@ -1413,7 +1450,7 @@
 		 * Public API
 		 */
 		return {
-			sync: sync,
+			//sync: sync,
 			cleanUp: cleanUp,
 			LocalDB: LocalDB,
 			Queue: Queue,

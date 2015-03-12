@@ -270,3 +270,58 @@ QUnit.test("Get parameters are parsed correctly", function (assert) {
 	});
 
 });
+
+QUnit.test("The jqXHR-object can be manipulated", function (assert) {
+	var done = assert.async();
+	var countDone = 0;
+
+	var scuba = $.scuba({
+		namespace: generateDatabase(),
+		noConflict: true,
+		downSyncRoutes: [
+			{
+				url: "http://localhost:8000/test/api/users.json"
+			}
+		],
+		routes: [
+			{
+				route: "http://localhost:8000/test/api/users",
+				type: "get",
+				data: function (options) {
+					// If invalid gender, throw error
+					if(options.getParams.gender > 1) {
+						options.jqXHR.status = 400;
+						var deferred = $.Deferred();
+						deferred.reject({
+							errors: [
+								"Invalid Gender"
+							]
+						});
+
+						return deferred.promise();
+					}
+
+					var data = this.findAll("users");
+					return data;
+				}
+			}
+		]
+	});
+
+	scuba.onofflineready(function() {
+		scuba.ajax({
+			url: "http://localhost:8000/test/api/users?gender=3&admin",
+			type: "get",
+			complete: function (jqXHR) {
+				assert.equal(jqXHR.status, 400, "The jqXHR-Status code must be 400");
+				assert.equal(jqXHR.responseJSON.errors.length, 1, "jqXHR.responseJSON should contain an array with one item");
+
+				if(++countDone == 1) {
+					done();
+					scuba.cleanUp();
+				}
+			}
+		});
+	});
+
+});
