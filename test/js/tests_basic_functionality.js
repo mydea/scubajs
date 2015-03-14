@@ -1,5 +1,7 @@
 QUnit.module("Basic functionality");
 QUnit.test("scuba can be run", function (assert) {
+	var done = assert.async();
+
 	var scuba = $.scuba({
 		namespace: generateDatabase(),
 		noConflict: true
@@ -7,9 +9,15 @@ QUnit.test("scuba can be run", function (assert) {
 
 	assert.ok(scuba, "$.scuba() should return an object");
 
-	assert.ok(scuba.cleanUp(), "can clean up with cleanUp()");
-});
+	scuba.onofflineready(function (offlineReady) {
+		var clean = scuba.cleanUp();
 
+		clean.always(function() {
+			assert.ok(true, "can clean up with cleanUp()");
+			done();
+		});
+	});
+});
 
 QUnit.test("scuba emits events", function (assert) {
 	var done = assert.async();
@@ -21,7 +29,9 @@ QUnit.test("scuba emits events", function (assert) {
 
 	scuba.onofflineready(function (offlineReady) {
 		assert.ok(offlineReady, "offlineready event should be called and param should be true");
-		done();
-		scuba.cleanUp();
+		scuba.cleanUp().then(function() {
+			done();
+		});
 	});
 });
+

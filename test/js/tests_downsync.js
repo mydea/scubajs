@@ -7,7 +7,7 @@ QUnit.test("scuba can download and save data", function (assert) {
 		noConflict: true,
 		downSyncRoutes: [
 			{
-				url: "http://localhost:8000/test/api/users.json",
+				url: ""+localUrl+"/test/api/users.json",
 				success: function (data) {
 					delete data.meta;
 					return data;
@@ -34,14 +34,14 @@ QUnit.test("scuba can use multiple downsync routes", function (assert) {
 		noConflict: true,
 		downSyncRoutes: [
 			{
-				url: "http://localhost:8000/test/api/users.json",
+				url: ""+localUrl+"/test/api/users.json",
 				success: function (data) {
 					delete data.meta;
 					return data;
 				}
 			},
 			{
-				url: "http://localhost:8000/test/api/tasks.json",
+				url: ""+localUrl+"/test/api/tasks.json",
 				success: function (data) {
 					delete data.meta;
 					return data;
@@ -78,7 +78,7 @@ QUnit.test("down sync uses default parsing function when none is set", function 
 		noConflict: true,
 		downSyncRoutes: [
 			{
-				url: "http://localhost:8000/test/api/users.json"
+				url: ""+localUrl+"/test/api/users.json"
 			}
 		],
 		onofflineready: function (e, offlineReady) {
@@ -101,7 +101,7 @@ QUnit.test("down sync can use multiple models per route", function (assert) {
 		noConflict: true,
 		downSyncRoutes: [
 			{
-				url: "http://localhost:8000/test/api/tasks_users.json"
+				url: ""+localUrl+"/test/api/tasks_users.json"
 			}
 		],
 		onofflineready: function (e, offlineReady) {
@@ -135,10 +135,10 @@ QUnit.test("down sync can merge a model from multiple route", function (assert) 
 		noConflict: true,
 		downSyncRoutes: [
 			{
-				url: "http://localhost:8000/test/api/users.json"
+				url: ""+localUrl+"/test/api/users.json"
 			},
 			{
-				url: "http://localhost:8000/test/api/users_2.json"
+				url: ""+localUrl+"/test/api/users_2.json"
 			}
 		]
 	});

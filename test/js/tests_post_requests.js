@@ -9,7 +9,7 @@ QUnit.test("post requests are added to the queue", function (assert) {
 		noConflict: true,
 		downSyncRoutes: [
 			{
-				url: "http://localhost:8000/test/api/users.json"
+				url: ""+localUrl+"/test/api/users.json"
 			}
 		],
 		routes: [
@@ -70,7 +70,7 @@ QUnit.test("default functions work", function (assert) {
 		noConflict: true,
 		downSyncRoutes: [
 			{
-				url: "http://localhost:8000/test/api/users.json"
+				url: ""+localUrl+"/test/api/users.json"
 			}
 		],
 		routes: [
@@ -108,7 +108,7 @@ QUnit.test("queue is worked", function (assert) {
 		noConflict: true,
 		downSyncRoutes: [
 			{
-				url: "http://localhost:8000/test/api/users.json"
+				url: ""+localUrl+"/test/api/users.json"
 			}
 		],
 		routes: [
@@ -170,7 +170,7 @@ QUnit.test("queue errors are fired via event", function (assert) {
 		noConflict: true,
 		downSyncRoutes: [
 			{
-				url: "http://localhost:8000/test/api/users.json"
+				url: ""+localUrl+"/test/api/users.json"
 			}
 		],
 		routes: [
@@ -179,7 +179,7 @@ QUnit.test("queue errors are fired via event", function (assert) {
 				type: "post"
 			},
 			{
-				route: "http://fnovy.com/projects/scubajs/apitest2.php",
+				route: "http://fnovy.com/projects/scubajs/apitest_error.php",
 				type: "post"
 			}
 		]
@@ -213,7 +213,7 @@ QUnit.test("queue errors are fired via event", function (assert) {
 		});
 
 		scuba.ajax({
-			url: "http://fnovy.com/projects/scubajs/apitest2.php",
+			url: "http://fnovy.com/projects/scubajs/apitest_error.php",
 			type: "post",
 			data: {
 				"name": "test2",
@@ -243,7 +243,7 @@ QUnit.test("default routes are inserted correctly", function (assert) {
 		noConflict: true,
 		downSyncRoutes: [
 			{
-				url: "http://localhost:8000/test/api/tasks_users.json"
+				url: ""+localUrl+"/test/api/tasks_users.json"
 			}
 		],
 		apiBaseUrl: "http://localhsot:8000/test/api",
@@ -252,7 +252,7 @@ QUnit.test("default routes are inserted correctly", function (assert) {
 
 	scuba.onofflineready(function() {
 		scuba.ajax({
-			url: "http://localhost:8000/test/api/users",
+			url: ""+localUrl+"/test/api/users",
 			type: "post",
 			data: {
 				id: 99,

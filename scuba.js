@@ -4,7 +4,7 @@
  * Copyright © 2015 Francesco Novy | MIT license | https://github.com/mydea/scubajs
  * Version 0.1.2
  */
-(function ($) {
+(function ($, indexedDB) {
 	var offlineReadyEvent = "offlineready";
 	var offlineStatusEvent = "offlinestatuschange";
 	var queueStatusEvent = "queuestatuschange";
@@ -24,7 +24,7 @@
 		var ajaxOnline = $.ajax;
 
 
-		var Queue = (function() {
+		var Queue = (function () {
 			var items = [];
 			var namespace = "scuba_queue";
 			var errorCount = 0;
@@ -33,7 +33,7 @@
 			 * Save queue to LocalStorage
 			 * @private
 			 */
-			var _save = function() {
+			var _save = function () {
 				window.localStorage.setItem(namespace, JSON.stringify(items));
 			};
 
@@ -41,13 +41,13 @@
 			 * Load the queue from LocalStorage and initialise it
 			 * @private
 			 */
-			var _load = function() {
+			var _load = function () {
 				var ls = window.localStorage.getItem(namespace);
 				items = JSON.parse(ls) || [];
 			};
 
-			var queueError = function(err) {
-				if(typeof err === "undefined") {
+			var queueError = function (err) {
+				if (typeof err === "undefined") {
 					errorCount++;
 				} else {
 					errorCount = parseInt(err);
@@ -56,7 +56,7 @@
 				return errorCount;
 			};
 
-			var hasError = function() {
+			var hasError = function () {
 				return errorCount >= 3;
 			};
 
@@ -64,7 +64,7 @@
 			 * Adds a new element to the queue
 			 * @param item
 			 */
-			var enqueue = function(item) {
+			var enqueue = function (item) {
 				items.push(item);
 				_save();
 			};
@@ -73,7 +73,7 @@
 			 * Returns the first queue item and removes it from the queue
 			 * @returns {T}
 			 */
-			var dequeue = function() {
+			var dequeue = function () {
 				var item = items.shift();
 				_save();
 
@@ -84,7 +84,7 @@
 			 * Returns the queue length
 			 * @returns {Number}
 			 */
-			var length = function() {
+			var length = function () {
 				return items.length;
 			};
 
@@ -92,28 +92,28 @@
 			 * Returns the first queue element or null if queue is empty
 			 * @returns {*|null}
 			 */
-			var first = function() {
-				return items[0]	|| null;
+			var first = function () {
+				return items[0] || null;
 			};
 
 			/**
 			 * Returns the last queue element or null if queue is empty
 			 * @returns {*|null}
 			 */
-			var last = function() {
-				return items[items.length-1] || null;
+			var last = function () {
+				return items[items.length - 1] || null;
 			};
 
 			/**
 			 * Returns the whole queue
 			 * @returns {Array}
 			 */
-			var getQueue = function() {
+			var getQueue = function () {
 				return items;
 			};
 
-			var init = function(namespaceSet) {
-				if(typeof namespaceSet === "undefined") {
+			var init = function (namespaceSet) {
+				if (typeof namespaceSet === "undefined") {
 					namespaceSet = "scuba_queue";
 				}
 
@@ -197,7 +197,7 @@
 					return false;
 				}
 
-				id = ""+id;
+				id = "" + id;
 
 				var trans = db.transaction([table], "readonly");
 				var store = trans.objectStore(table);
@@ -238,7 +238,7 @@
 					var filteredData = $.grep(data, function (item) {
 						for (var i in attrs) {
 							if (typeof attrs[i] === "string") {
-								if (attrs[i].toLowerCase() !== (""+item[i]).toLowerCase()) {
+								if (attrs[i].toLowerCase() !== ("" + item[i]).toLowerCase()) {
 									return false;
 								}
 							} else {
@@ -293,63 +293,38 @@
 			 * @param boolen checkIfExists (optional) if set to true, data.id will be checked for existance before inserting the row
 			 * @returns object The inserted object
 			 */
-			var rowInsert = function (table, data, checkIfExists) {
+			var rowInsert = function (table, data) {
 				var deferred = $.Deferred();
 
 				if (!databaseIsReady) {
 					return false;
 				}
 
-				if(typeof checkIfExists === "undefined") {
-					checkIfExists = true;
-				}
+				data.id = "" + data.id;
 
-				data.id = ""+data.id;
+				var trans = db.transaction([table], "readwrite");
+				var store = trans.objectStore(table);
 
-				// By default, do not check if the entry already exists
-				// Because it is a performance bottle neck, especially when inserting many entries at once
-				if(checkIfExists) {
-					findById(table, data.id).then(function(item) {
-						if(item) {
-							deferred.resolve(null);
-							return;
-						}
+				var request = store.add(data);
 
-						var trans = db.transaction([table], "readwrite");
-						var store = trans.objectStore(table);
-						var request = store.put(data);
+				/*
+				 * Use transaction.oncomplete instead of request.onsuccess
+				 * because request.onsuccess fires a step before the data is actually available,
+				 * which means that a consecutive findAll will not find the inserted row
+				 */
+				trans.oncomplete = function () {
+					deferred.resolve(data);
+				};
 
-						/*
-						 * Use transaction.oncomplete instead of request.onsuccess
-						 * because request.onsuccess fires a step before the data is actually available,
-						 * which means that a consecutive findAll will not find the inserted row
-						 */
-						trans.oncomplete = function () {
-							deferred.resolve(data);
-						};
+				trans.onerror = function (e) {
+					// When cannot insert (e.g. because ID already exists), resolve with null
+					// TODO: Maybe reject?
 
-						trans.onerror = function (e) {
-							deferred.reject("error");
-						};
-					});
-				} else {
-					var trans = db.transaction([table], "readwrite");
-					var store = trans.objectStore(table);
-					var request = store.put(data);
+					// This is needed because otherwise Firefox throws an uncatchable exception
+					e.preventDefault();
+					deferred.resolve(null);
+				};
 
-					/*
-					 * Use transaction.oncomplete instead of request.onsuccess
-					 * because request.onsuccess fires a step before the data is actually available,
-					 * which means that a consecutive findAll will not find the inserted row
-					 */
-					trans.oncomplete = function () {
-						deferred.resolve(data);
-					};
-
-					trans.onerror = function (e) {
-						deferred.reject("error");
-					};
-				}
 
 				return deferred.promise();
 			};
@@ -369,8 +344,8 @@
 					return false;
 				}
 
-				id = ""+id;
-				data.id = ""+data.id;
+				id = "" + id;
+				data.id = "" + data.id;
 
 				if (arguments.length !== 3) {
 					console.error("rowUpdate() expects 3 parameters: table, id, data");
@@ -420,7 +395,7 @@
 					return false;
 				}
 
-				id = ""+id;
+				id = "" + id;
 
 				// Check if entry exists
 				findById(table, id).then(function (item) {
@@ -468,7 +443,11 @@
 				};
 
 				request.onerror = function () {
+					console.error("error creating schema");
+				};
 
+				request.onblocked = function() {
+					console.error("blocked creating schema");
 				};
 
 			};
@@ -477,12 +456,40 @@
 			 * Drop the database
 			 */
 			var cleanUp = function () {
-				var request = indexedDB.deleteDatabase(dbName);
+				var deferred = $.Deferred();
+
+				if(db) {
+					db.close();
+				}
+
+				setTimeout(function() {
+					var request = indexedDB.deleteDatabase(dbName);
+
+					request.onsuccess = function() {
+						deferred.resolve(null);
+					};
+
+					request.onerror = function() {
+						deferred.resolve(null);
+					};
+
+					// In IE, the deletion of the DB might fail if a transaction is still open
+					// In this case, try again a bit later
+					request.onblocked = function() {
+						setTimeout(function() {
+							request = indexedDB.deleteDatabase(dbName);
+						}, 10);
+					};
+				});
+
+
+				return deferred.promise();
 			};
 
 			var _createSchema = function (schema) {
 				// Create database (async!)
-				var request = indexedDB.open(dbName, (new Date()).getTime());
+				var request = indexedDB.open(dbName, 1);
+
 				request.onupgradeneeded = function () {
 					var db = this.result;
 					var i, j, objectStore;
@@ -548,7 +555,7 @@
 				};
 
 				request.onerror = function () {
-
+					console.error("could not open offline database");
 				};
 
 			};
@@ -602,26 +609,26 @@
 			LocalDB = settings.localDBClass;
 		}
 
-		if(!settings.routes) {
+		if (!settings.routes) {
 			settings.routes = [];
 		}
-		for(var i = 0; i<settings.routes.length; i++) {
+		for (var i = 0; i < settings.routes.length; i++) {
 			// Default functions for routes
-			if(typeof settings.routes[i].data !== "function") {
-				settings.routes[i].data = function() {
+			if (typeof settings.routes[i].data !== "function") {
+				settings.routes[i].data = function () {
 					var deferred = $.Deferred();
 					deferred.resolve([]);
 
 					return deferred.promise();
 				};
 			}
-			if(typeof settings.routes[i].format !== "function") {
-				settings.routes[i].format = function(data) {
+			if (typeof settings.routes[i].format !== "function") {
+				settings.routes[i].format = function (data) {
 					return data;
 				};
 			}
-			if(typeof settings.routes[i].action !== "function") {
-				settings.routes[i].action = function() {
+			if (typeof settings.routes[i].action !== "function") {
+				settings.routes[i].action = function () {
 					return null;
 				};
 			}
@@ -659,7 +666,7 @@
 		 * @private
 		 */
 		var _emitOfflineStatusChangeEvent = function () {
-			if(!settings.noConflict) {
+			if (!settings.noConflict) {
 				$(window).trigger(offlineStatusEvent, [isOffline()]);
 			}
 			settings.onofflinestatuschange(isOffline());
@@ -670,7 +677,7 @@
 		 * @private
 		 */
 		var _emitOfflineReadyEvent = function () {
-			if(!settings.noConflict) {
+			if (!settings.noConflict) {
 				$(window).trigger(offlineReadyEvent, [databaseIsReady]);
 			}
 			settings.onofflineready(databaseIsReady);
@@ -681,13 +688,13 @@
 		 * @private
 		 */
 		var _emitSyncEvent = function () {
-			if(!settings.noConflict) {
+			if (!settings.noConflict) {
 				$(window).trigger(syncEvent, [syncInProgress]);
 			}
 			settings.onsync(syncInProgress);
 		};
 
-		var _emitQueueStatusEvent = function() {
+		var _emitQueueStatusEvent = function () {
 			var obj = {
 				status: Queue.hasError() ? "ERROR" : "OK",
 				nextElement: Queue.first(),
@@ -695,7 +702,7 @@
 				queueLength: Queue.length()
 			};
 
-			if(!settings.noConflict) {
+			if (!settings.noConflict) {
 				$(window).trigger(queueStatusEvent, [obj]);
 			}
 			settings.onqueuestatuschange(obj);
@@ -728,7 +735,7 @@
 			}
 
 			// initialise default routes
-			if(settings.includeDefaultRoutes && settings.apiBaseUrl) {
+			if (settings.includeDefaultRoutes && settings.apiBaseUrl) {
 				_initDefaultRoutes(models);
 			}
 
@@ -736,21 +743,21 @@
 			return true;
 		};
 
-		var _initDefaultRoutes = function(models) {
+		var _initDefaultRoutes = function (models) {
 			var routes = settings.routes;
 			var i, j, tempParts, regex, matches, tmpUrl;
 
-			for(i = 0; i < models.length; i++) {
-				(function() {
+			for (i = 0; i < models.length; i++) {
+				(function () {
 					var m = models[i], tempUrl;
 					var j;
 
 					// GET /model
-					tempUrl = settings.apiBaseUrl+"/"+m;
+					tempUrl = settings.apiBaseUrl + "/" + m;
 
 					// Check if the route already exists
-					for(j=0; j<routes.length; j++) {
-						if(routes[j].type.toLowerCase() === "get" && routes[j].route.toLowerCase() === tempUrl.toLowerCase()) {
+					for (j = 0; j < routes.length; j++) {
+						if (routes[j].type.toLowerCase() === "get" && routes[j].route.toLowerCase() === tempUrl.toLowerCase()) {
 							return;
 						}
 					}
@@ -758,17 +765,17 @@
 					settings.routes.push({
 						type: "get",
 						route: tempUrl,
-						data: function() {
+						data: function () {
 							return this.findAll(m);
 						}
 					});
 
 					// GET /model/id
-					tempUrl = settings.apiBaseUrl+"/"+m+"/!!";
+					tempUrl = settings.apiBaseUrl + "/" + m + "/!!";
 
 					// Check if the route already exists
-					for(j=0; j<routes.length; j++) {
-						if(routes[j].type.toLowerCase() === "get" && routes[j].route.toLowerCase() === tempUrl.toLowerCase()) {
+					for (j = 0; j < routes.length; j++) {
+						if (routes[j].type.toLowerCase() === "get" && routes[j].route.toLowerCase() === tempUrl.toLowerCase()) {
 							return;
 						}
 					}
@@ -776,17 +783,17 @@
 					settings.routes.push({
 						type: "get",
 						route: tempUrl,
-						data: function(options, id) {
+						data: function (options, id) {
 							return this.findById(m, id);
 						}
 					});
 
 					// POST /model
-					tempUrl = settings.apiBaseUrl+"/"+m+"";
+					tempUrl = settings.apiBaseUrl + "/" + m + "";
 
 					// Check if the route already exists
-					for(j=0; j<routes.length; j++) {
-						if(routes[j].type.toLowerCase() === "post" && routes[j].route.toLowerCase() === tempUrl.toLowerCase()) {
+					for (j = 0; j < routes.length; j++) {
+						if (routes[j].type.toLowerCase() === "post" && routes[j].route.toLowerCase() === tempUrl.toLowerCase()) {
 							return;
 						}
 					}
@@ -794,20 +801,20 @@
 					settings.routes.push({
 						type: "post",
 						route: tempUrl,
-						data: function(options) {
+						data: function (options) {
 							return this.findById(m, options.data.id);
 						},
-						action: function(options) {
+						action: function (options) {
 							return this.rowInsert(m, options.data);
 						}
 					});
 
 					// PUT /model/id
-					tempUrl = settings.apiBaseUrl+"/"+m+"/!!";
+					tempUrl = settings.apiBaseUrl + "/" + m + "/!!";
 
 					// Check if the route already exists
-					for(j=0; j<routes.length; j++) {
-						if(routes[j].type.toLowerCase() === "put" && routes[j].route.toLowerCase() === tempUrl.toLowerCase()) {
+					for (j = 0; j < routes.length; j++) {
+						if (routes[j].type.toLowerCase() === "put" && routes[j].route.toLowerCase() === tempUrl.toLowerCase()) {
 							return;
 						}
 					}
@@ -815,20 +822,20 @@
 					settings.routes.push({
 						type: "put",
 						route: tempUrl,
-						data: function(options, id) {
+						data: function (options, id) {
 							return this.findById(m, id);
 						},
-						action: function(options, id) {
+						action: function (options, id) {
 							return this.rowUpdate(m, id, options.data);
 						}
 					});
 
 					// DELETE /model/id
-					tempUrl = settings.apiBaseUrl+"/"+m+"/!!";
+					tempUrl = settings.apiBaseUrl + "/" + m + "/!!";
 
 					// Check if the route already exists
-					for(j=0; j<routes.length; j++) {
-						if(routes[j].type.toLowerCase() === "delete" && routes[j].route.toLowerCase() === tempUrl.toLowerCase()) {
+					for (j = 0; j < routes.length; j++) {
+						if (routes[j].type.toLowerCase() === "delete" && routes[j].route.toLowerCase() === tempUrl.toLowerCase()) {
 							return;
 						}
 					}
@@ -836,10 +843,10 @@
 					settings.routes.push({
 						type: "delete",
 						route: tempUrl,
-						data: function(options) {
+						data: function (options) {
 							return null;
 						},
-						action: function(options, id) {
+						action: function (options, id) {
 							return this.rowDelete(m, id);
 						}
 					});
@@ -906,14 +913,12 @@
 							openRoutes--;
 							if (openRoutes === 0) {
 								_initLocalDB(data);
-								console.timeEnd("downsync");
 							}
 						},
 						error: function () {
 							if (abort) {
 								return;
 							}
-							console.timeEnd("downsync");
 							abort = true;
 							_initLocalDB(null);
 						}
@@ -930,27 +935,27 @@
 		 * @private
 		 */
 		var _workQueue = function () {
-			if(!isOfflineReady() || syncPaused) {
+			if (!isOfflineReady() || syncPaused) {
 				clearTimeout(queueTimer);
 				queueTimer = setTimeout(_workQueue, settings.syncRetry);
-				if(syncInProgress) {
+				if (syncInProgress) {
 					syncInProgress = false;
 					_emitSyncEvent();
 				}
 				return;
 			}
 
-			if(queueIsWorking) {
+			if (queueIsWorking) {
 				clearTimeout(queueTimer);
 				queueTimer = setTimeout(_workQueue, 10);
 				return;
 			}
 
 			// Queue is empty?
-			if(!Queue.length()) {
+			if (!Queue.length()) {
 				clearTimeout(queueTimer);
 				queueTimer = setTimeout(_workQueue, settings.syncRetry);
-				if(syncInProgress) {
+				if (syncInProgress) {
 					syncInProgress = false;
 					_emitSyncEvent();
 					_emitQueueStatusEvent();
@@ -959,8 +964,8 @@
 			}
 
 			// Queue Error, handle it...
-			if(Queue.hasError()) {
-				if(settings.queueIfError.toLowerCase() === "continue") {
+			if (Queue.hasError()) {
+				if (settings.queueIfError.toLowerCase() === "continue") {
 					_emitSyncEvent();
 					_emitQueueStatusEvent();
 					Queue.dequeue();
@@ -974,7 +979,7 @@
 				_emitSyncEvent();
 				_emitQueueStatusEvent();
 
-				if(typeof settings.queueIfError === "function") {
+				if (typeof settings.queueIfError === "function") {
 					settings.queueIfError(Queue.getQueue());
 				}
 
@@ -984,12 +989,12 @@
 			queueIsWorking = true;
 
 			// At least one entry, try it...
-			if(!syncInProgress) {
+			if (!syncInProgress) {
 				syncInProgress = true;
 				_emitSyncEvent();
 			}
 
-			ajaxOnline(Queue.first()).then(function(data) {
+			ajaxOnline(Queue.first()).then(function (data) {
 				// Delete entry from queue, then continue with next entry
 				var item = Queue.dequeue();
 
@@ -998,9 +1003,11 @@
 				clearTimeout(queueTimer);
 				queueTimer = setTimeout(_workQueue, 10);
 				_emitQueueStatusEvent();
-			}, function(e) {
+			}, function (jqXHR, textStaus, error) {
 				// If readystate is 0, app is offline
-				if(e.readyState === 0) {
+				// TODO: ISSUE with CORS problems (no access-controll-allow-origin header, ...
+				// readyState is also 0!
+				if (jqXHR.readyState === 0) {
 					queueIsWorking = false;
 					clearTimeout(queueTimer);
 					queueTimer = setTimeout(_workQueue, settings.syncRetry);
@@ -1117,14 +1124,14 @@
 
 
 			// Check for action, data and format functions in found route
-			if(typeof fittingRoute.route.action !== "function") {
+			if (typeof fittingRoute.route.action !== "function") {
 				fittingRoute.route.action = null;
 			}
 			// Data is required!
-			if(typeof fittingRoute.route.data !== "function") {
+			if (typeof fittingRoute.route.data !== "function") {
 				return ajaxOnline.apply($, arguments);
 			}
-			if(typeof fittingRoute.route.format !== "function") {
+			if (typeof fittingRoute.route.format !== "function") {
 				fittingRoute.route.format = settings.defaultFormat;
 			}
 
@@ -1144,14 +1151,14 @@
 			var scubaOptions = $.extend({}, reducedOptions);
 			scubaOptions.getParams = fittingRoute.getParams;
 			// For GET requests, add the data field to the getParams
-			if(options.type === "get" && options.data) {
-				scubaOptions.getParams = $.extend({}, scubaOptions.getParams,  options.data);
+			if (options.type === "get" && options.data) {
+				scubaOptions.getParams = $.extend({}, scubaOptions.getParams, options.data);
 			}
 
 			var actionPromise = null;
 
 			// First, the action...
-			if(fittingRoute.route.action) {
+			if (fittingRoute.route.action) {
 				actionPromise = fittingRoute.route.action.apply(LocalDB, params);
 			}
 
@@ -1179,19 +1186,19 @@
 				jqXHR.readyState = 0;
 				jqXHR.statusText = "OK";
 				jqXHR.status = 200;
-				jqXHR.getAllResponseHeaders = function() {
+				jqXHR.getAllResponseHeaders = function () {
 
 				};
-				jqXHR.setRequestHeader = function(name, value) {
+				jqXHR.setRequestHeader = function (name, value) {
 
 				};
-				jqXHR.getResponseHeader = function(name) {
+				jqXHR.getResponseHeader = function (name) {
 
 				};
-				jqXHR.statusCode = function() {
+				jqXHR.statusCode = function () {
 					return this.status;
 				};
-				jqXHR.abort = function() {
+				jqXHR.abort = function () {
 
 				};
 
@@ -1207,12 +1214,12 @@
 					var data = fittingRoute.route.data.apply(LocalDB, params);
 
 					// Get the status
-					if(typeof fittingRoute.route.status === "function") {
+					if (typeof fittingRoute.route.status === "function") {
 
 					}
 
 					// If data returns empty, return "null"
-					if(!data) {
+					if (!data) {
 						response = fittingRoute.route.format(null, scubaOptions);
 
 						jqXHR.readyState = 4;
@@ -1231,7 +1238,7 @@
 						options.complete(jqXHR, "success");
 					}).fail(function (e) {
 						// Automatically add error message to body, if it is an object
-						if(typeof e === "object") {
+						if (typeof e === "object") {
 							jqXHR.responseText = JSON.stringify(e);
 							jqXHR.responseJSON = e;
 						}
@@ -1265,11 +1272,11 @@
 			return promise;
 		};
 
-		var isOfflineReady = function() {
+		var isOfflineReady = function () {
 			return databaseIsReady;
 		};
 
-		var isOffline = function() {
+		var isOffline = function () {
 			return offline;
 		};
 
@@ -1278,14 +1285,14 @@
 		 * @param boolean pause (optional) TRUE if sync should be paused, FALSE if it should be continued
 		 * @returns {boolean}
 		 */
-		var pauseSync = function(pause) {
-			if(typeof pause === "undefined") {
+		var pauseSync = function (pause) {
+			if (typeof pause === "undefined") {
 				syncPaused = !syncPaused;
 			} else {
 				syncPaused = !!pause;
 			}
 
-			if(!syncPaused) {
+			if (!syncPaused) {
 				clearTimeout(queueTimer);
 				queueTimer = setTimeout(_workQueue, 10);
 			} else {
@@ -1300,8 +1307,7 @@
 		 * clear all local Databases
 		 */
 		var cleanUp = function () {
-			LocalDB.cleanUp();
-			return true;
+			return LocalDB.cleanUp();
 		};
 
 		// Initialise scuba
@@ -1357,7 +1363,7 @@
 		 */
 		var _parseURI = function (uri) {
 			// If apiBaseUrl is set, all uris without http:// are prefixed with it
-			if(settings.apiBaseUrl && uri.indexOf("http") !== 0) {
+			if (settings.apiBaseUrl && uri.indexOf("http") !== 0) {
 				uri = settings.apiBaseUrl + uri;
 			}
 
@@ -1426,11 +1432,11 @@
 
 					// make key-value pairs from get params
 					tmp = routeParts.searchParams;
-					if(tmp.length > 0) {
+					if (tmp.length > 0) {
 						tmp = tmp.substr(1);
 						tmp = tmp.split("&");
 
-						for(k = 0; k<tmp.length; k++) {
+						for (k = 0; k < tmp.length; k++) {
 							getParams[tmp[k].split("=")[0]] = tmp[k].split("=")[1] || null;
 						}
 					}
@@ -1458,19 +1464,19 @@
 			isOffline: isOffline,
 			isOfflineReady: isOfflineReady,
 			pauseSync: pauseSync,
-			onofflineready: function(f) {
+			onofflineready: function (f) {
 				settings.onofflineready = f;
 			},
-			onofflinestatuschange: function(f) {
+			onofflinestatuschange: function (f) {
 				settings.onofflinestatuschange = f;
 			},
-			onsync: function(f) {
+			onsync: function (f) {
 				settings.onsync = f;
 			},
-			onqueuestatuschange: function(f) {
+			onqueuestatuschange: function (f) {
 				settings.onqueuestatuschange = f;
 			},
-			queueContinue: function() {
+			queueContinue: function () {
 				Queue.queueError(0);
 				clearTimeout(queueTimer);
 				queueTimer = setTimeout(_workQueue, 10);
@@ -1490,7 +1496,7 @@
 		routes: [],
 		namespace: "scuba",
 		noConflict: false,
-		
+
 		queueIfError: "continue", // continue, stop, function
 
 		defaultFormat: function (data) {
@@ -1498,4 +1504,4 @@
 		}
 	};
 
-}(jQuery));
+}(jQuery, window.indexedDB));

@@ -8,12 +8,12 @@ QUnit.test("get request are redirected to local db", function (assert) {
 		noConflict: true,
 		downSyncRoutes: [
 			{
-				url: "http://localhost:8000/test/api/users.json"
+				url: ""+localUrl+"/test/api/users.json"
 			}
 		],
 		routes: [
 			{
-				route: "http://localhost:8000/test/api/users.json",
+				route: ""+localUrl+"/test/api/users.json",
 				type: "get",
 				data: function () {
 					var data = this.findAll("users");
@@ -29,7 +29,7 @@ QUnit.test("get request are redirected to local db", function (assert) {
 		],
 		onofflineready: function (e, offlineReady) {
 			scuba.ajax({
-				url: "http://localhost:8000/test/api/users.json",
+				url: ""+localUrl+"/test/api/users.json",
 				type: "get",
 				success: function (data) {
 					assert.equal(data.users.length, 5, "5 users are returned by the route success function");
@@ -54,12 +54,12 @@ QUnit.test("path segments are parsed correctly", function (assert) {
 		noConflict: true,
 		downSyncRoutes: [
 			{
-				url: "http://localhost:8000/test/api/users.json"
+				url: ""+localUrl+"/test/api/users.json"
 			}
 		],
 		routes: [
 			{
-				route: "http://localhost:8000/test/api/users/!!",
+				route: ""+localUrl+"/test/api/users/!!",
 				type: "get",
 				data: function (options, param1) {
 					var data = this.findById("users", param1);
@@ -76,7 +76,7 @@ QUnit.test("path segments are parsed correctly", function (assert) {
 		onofflineready: function (e, offlineReady) {
 
 			scuba.ajax({
-				url: "http://localhost:8000/test/api/users/1",
+				url: ""+localUrl+"/test/api/users/1",
 				type: "get",
 				success: function (data) {
 					assert.ok(data.users, "an object is returned by the route success function");
@@ -98,16 +98,16 @@ QUnit.test("default routes are inserted correctly", function (assert) {
 		noConflict: true,
 		downSyncRoutes: [
 			{
-				url: "http://localhost:8000/test/api/tasks_users.json"
+				url: ""+localUrl+"/test/api/tasks_users.json"
 			}
 		],
-		apiBaseUrl: "http://localhsot:8000/test/api",
+		apiBaseUrl: localUrl+"/test/api",
 		includeDefaultRoutes: true
 	});
 
 	scuba.onofflineready(function() {
 		scuba.ajax({
-			url: "http://localhost:8000/test/api/users",
+			url: ""+localUrl+"/test/api/users",
 			type: "get",
 			success: function (data) {
 				assert.equal(data.length, 5, "5 users are returned by the default GET /model function");
@@ -120,7 +120,7 @@ QUnit.test("default routes are inserted correctly", function (assert) {
 		});
 
 		scuba.ajax({
-			url: "http://localhost:8000/test/api/users/1",
+			url: ""+localUrl+"/test/api/users/1",
 			type: "get",
 			success: function (data) {
 				assert.equal(typeof data, "object", "an object is returned by the default GET /model/id function");
@@ -144,7 +144,7 @@ QUnit.test("Hosts are matched correctly", function (assert) {
 		noConflict: true,
 		downSyncRoutes: [
 			{
-				url: "http://localhost:8000/test/api/users.json"
+				url: ""+localUrl+"/test/api/users.json"
 			}
 		],
 		apiBaseUrl: "http://testapi.com/test/api",
@@ -219,12 +219,12 @@ QUnit.test("Get parameters are parsed correctly", function (assert) {
 		noConflict: true,
 		downSyncRoutes: [
 			{
-				url: "http://localhost:8000/test/api/users.json"
+				url: ""+localUrl+"/test/api/users.json"
 			}
 		],
 		routes: [
 			{
-				route: "http://localhost:8000/test/api/users",
+				route: ""+localUrl+"/test/api/users",
 				type: "get",
 				data: function (options) {
 					var searchOptions = {
@@ -240,7 +240,7 @@ QUnit.test("Get parameters are parsed correctly", function (assert) {
 
 	scuba.onofflineready(function() {
 		scuba.ajax({
-			url: "http://localhost:8000/test/api/users?gender=1&admin",
+			url: ""+localUrl+"/test/api/users?gender=1&admin",
 			type: "get",
 			success: function (data) {
 				assert.equal(data.length, 2, "2 users are returned via GET parameters");
@@ -253,7 +253,7 @@ QUnit.test("Get parameters are parsed correctly", function (assert) {
 		});
 
 		scuba.ajax({
-			url: "http://localhost:8000/test/api/users?admin=2",
+			url: ""+localUrl+"/test/api/users?admin=2",
 			data: {
 				gender: 1
 			},
@@ -280,12 +280,12 @@ QUnit.test("The jqXHR-object can be manipulated", function (assert) {
 		noConflict: true,
 		downSyncRoutes: [
 			{
-				url: "http://localhost:8000/test/api/users.json"
+				url: ""+localUrl+"/test/api/users.json"
 			}
 		],
 		routes: [
 			{
-				route: "http://localhost:8000/test/api/users",
+				route: ""+localUrl+"/test/api/users",
 				type: "get",
 				data: function (options) {
 					// If invalid gender, throw error
@@ -310,7 +310,7 @@ QUnit.test("The jqXHR-object can be manipulated", function (assert) {
 
 	scuba.onofflineready(function() {
 		scuba.ajax({
-			url: "http://localhost:8000/test/api/users?gender=3&admin",
+			url: ""+localUrl+"/test/api/users?gender=3&admin",
 			type: "get",
 			complete: function (jqXHR) {
 				assert.equal(jqXHR.status, 400, "The jqXHR-Status code must be 400");

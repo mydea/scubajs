@@ -8,7 +8,7 @@ QUnit.test("findAll() works", function (assert) {
 		noConflict: true,
 		downSyncRoutes: [
 			{
-				url: "http://localhost:8000/test/api/users.json"
+				url: ""+localUrl+"/test/api/users.json"
 			}
 		],
 		onofflineready: function (e, offlineReady) {
@@ -29,7 +29,7 @@ QUnit.test("findById() works", function (assert) {
 		noConflict: true,
 		downSyncRoutes: [
 			{
-				url: "http://localhost:8000/test/api/users.json"
+				url: ""+localUrl+"/test/api/users.json"
 			}
 		],
 		onofflineready: function () {
@@ -50,7 +50,7 @@ QUnit.test("findByAttributes() works", function (assert) {
 		noConflict: true,
 		downSyncRoutes: [
 			{
-				url: "http://localhost:8000/test/api/users.json"
+				url: ""+localUrl+"/test/api/users.json"
 			}
 		],
 		onofflineready: function (e, offlineReady) {
@@ -74,7 +74,7 @@ QUnit.test("findCustom() works", function (assert) {
 		noConflict: true,
 		downSyncRoutes: [
 			{
-				url: "http://localhost:8000/test/api/users.json"
+				url: ""+localUrl+"/test/api/users.json"
 			}
 		],
 		onofflineready: function (e, offlineReady) {
@@ -97,7 +97,7 @@ QUnit.test("findById() returns null if nothing is found", function (assert) {
 		noConflict: true,
 		downSyncRoutes: [
 			{
-				url: "http://localhost:8000/test/api/users.json"
+				url: ""+localUrl+"/test/api/users.json"
 			}
 		],
 		onofflineready: function () {
@@ -119,7 +119,7 @@ QUnit.test("findAll, findCustom, findByAttributes return [] if nothing is found"
 		noConflict: true,
 		downSyncRoutes: [
 			{
-				url: "http://localhost:8000/test/api/users_empty.json"
+				url: ""+localUrl+"/test/api/users_empty.json"
 			}
 		],
 		onofflineready: function (e, offlineReady) {
@@ -167,7 +167,7 @@ QUnit.test("rowInsert() works", function (assert) {
 		noConflict: true,
 		downSyncRoutes: [
 			{
-				url: "http://localhost:8000/test/api/users.json"
+				url: ""+localUrl+"/test/api/users.json"
 			}
 		],
 		onofflineready: function (e, offlineReady) {
@@ -187,7 +187,7 @@ QUnit.test("rowInsert() works", function (assert) {
 						assert.equal(item.firstname, "Firstname", "firstname from local db equals Firstname");
 
 						countDone++;
-						if (countDone === 3) {
+						if (countDone === 2) {
 							done();
 							scuba.cleanUp();
 						}
@@ -208,33 +208,13 @@ QUnit.test("rowInsert() works", function (assert) {
 						assert.equal(item.firstname, "John", "attribute is not overwritten when trying to insert existing row");
 
 						countDone++;
-						if (countDone === 3) {
+						if (countDone === 2) {
 							done();
 							scuba.cleanUp();
 						}
 					});
 				});
 
-			scuba.LocalDB.rowInsert(
-				"users",
-				{
-					id: 2,
-					firstname: "Firstname2",
-					lastname: "Lastname2"
-				},
-				false).then(function (item) {
-					assert.ok(item, "existing item are overwritten when checkIfExists is set to false");
-
-					scuba.LocalDB.findById("users", 2).then(function (item) {
-						assert.equal(item.firstname, "Firstname2", "attribute is overwritten when trying to insert existing row without checkIfExists");
-
-						countDone++;
-						if (countDone === 3) {
-							done();
-							scuba.cleanUp();
-						}
-					});
-				});
 		}
 	});
 });
@@ -248,7 +228,7 @@ QUnit.test("rowDelete() works", function (assert) {
 		noConflict: true,
 		downSyncRoutes: [
 			{
-				url: "http://localhost:8000/test/api/users.json"
+				url: ""+localUrl+"/test/api/users.json"
 			}
 		],
 		onofflineready: function (e, offlineReady) {
@@ -286,7 +266,7 @@ QUnit.test("rowUpdate() works", function (assert) {
 		noConflict: true,
 		downSyncRoutes: [
 			{
-				url: "http://localhost:8000/test/api/users.json"
+				url: ""+localUrl+"/test/api/users.json"
 			}
 		],
 		onofflineready: function (e, offlineReady) {
