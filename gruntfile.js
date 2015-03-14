@@ -6,7 +6,7 @@ module.exports = function (grunt) {
 		uglify: {
 			options: {
 				mangle: false,
-				banner: "/*! \n * scuba.js \n * \n * author: Francesco Novy \n * licence: MIT license \n * https://github.com/mydea/scubajs \n * v0.1.2 \n */\n\n"
+				banner: "/*! \n * scuba.js \n * \n * author: Francesco Novy \n * licence: MIT license \n * https://github.com/mydea/scubajs \n */\n\n"
 			},
 			scubajs: {
 				src: 'scuba.js',
