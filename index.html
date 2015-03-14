@@ -24,6 +24,7 @@
 		<li><a href="#localdb">LocalDB</a></li>
 		<li><a href="#events">Events</a></li>
 		<li><a href="#miscellaneous">Miscellaneous</a></li>
+		<li><a href="#browser-support">Browser Support</a></li>
 	</ul>
 </nav>
 
@@ -398,7 +399,10 @@ route: "/users/!!/comments/!!" // multiple placeholders are possible, too</code>
 	getParams: {
 		gender: 0,
 		admin: 1
-	}
+	},
+	// also added by scuba.js, the mocked jqXHR-object
+	// for direct manipulation of status-codes etc.
+	jqXHR: {...}
 }</code></pre>
 
 	<p>
@@ -667,6 +671,42 @@ route: "/users/!!/comments/!!" // multiple placeholders are possible, too</code>
 		<li>
 			While all data is saved in IndexedDB, the queue is saved in LocalStorage. This is because the IndexedDB database
 			is dropped and re-initialised with each down sync, while the queue is persisted across various down syncs.
+		</li>
+	</ul>
+
+	<h2 id="browser-support">Browser Support</h2>
+	<p>
+		scuba.js has been tested and should work in the following browsers:
+	</p>
+	<ul>
+		<li>Chrome 41</li>
+		<li>Chrome for Android 40</li>
+		<li>Firefox 36</li>
+		<li>Firefox for Android 36</li>
+		<li>Internet Explorer 11</li>
+		<li>Internet Explorer 10</li>
+		<li>Safari 8 - <span style="color: red;">WITH ISSUES!</span></li>
+		<li>iOS 8.1 Safari - <span style="color: red;">WITH ISSUES!</span></li>
+		<li>PhantomJS / with IndexedDBShim - <span style="color: red;">WITH ISSUES!</span></li>
+	</ul>
+
+	<p>
+		You can run the tests yourself at: <a href="http://fnovy.com/projects/scubajs/test">http://fnovy.com/projects/scubajs/test</a>.
+	</p>
+
+	<h3>Known Issues:</h3>
+	<ul>
+		<li>
+			In Safari 8, both on OS X and iOS, there is a very grave issue with IndexedDB.
+			Basically, if you have two tables, for example "users" and "tasks", and you insert an entry into a table with an ID
+			which exists in another table, the other item is deleted. This means that you CANNOT have a user and a task with the ID.
+			The only way around this is to use UUIDs for all models - something you will probably need to do anyway when using
+			scuba.js. <a href="http://www.raymondcamden.com/2014/9/25/IndexedDB-on-iOS-8--Broken-Bad">More Information about the bug.</a>
+		</li>
+		<li>
+			Using IndexedDBShim works quite good. However, there is an issue with <code>objectStore.add()</code>, which does not throw an
+			error if an entry already exists. This means that if you try to insert an item with an existing ID with <code>LocalDB.rowInsert()</code>, no error
+			is thrown and the existing entry is overwritten, which is bad behaviour. An <a href="https://github.com/axemclion/IndexedDBShim/issues/118">issue</a> has been filed with IndexedDBShim.
 		</li>
 	</ul>
 </div>
