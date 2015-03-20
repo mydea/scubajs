@@ -9,5 +9,3 @@ var temp;
 var localUrl = window.location.origin;
 var pathname = window.location.pathname;
 localUrl = localUrl + pathname.substr(0, pathname.lastIndexOf("/test"));
-
-console.log(localUrl);
