@@ -32,7 +32,7 @@ module.exports = function (grunt) {
 			all: {
 				options: {
 					urls: [
-						'http://0.0.0.0:8000/test/index.html',
+						'http://localhost:8000/test/index.html',
 					],
 					timeout: 10000,
 					'--ignore-ssl-errors': true,
