@@ -1003,10 +1003,11 @@
 				clearTimeout(queueTimer);
 				queueTimer = setTimeout(_workQueue, 10);
 				_emitQueueStatusEvent();
-			}, function (jqXHR, textStaus, error) {
+			}, function (jqXHR, textStatus, error) {
 				// If readystate is 0, app is offline
 				// TODO: ISSUE with CORS problems (no access-controll-allow-origin header, ...
 				// readyState is also 0!
+
 				if (jqXHR.readyState === 0) {
 					queueIsWorking = false;
 					clearTimeout(queueTimer);

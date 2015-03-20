@@ -212,9 +212,11 @@ QUnit.test("queue errors are fired via event", function (assert) {
 			}
 		});
 
+		// ISSUE with PhantomJS: When async !== false, readyState is always 0
 		scuba.ajax({
 			url: "http://fnovy.com/projects/scubajs/apitest_error.php",
 			type: "post",
+			async: false,
 			data: {
 				"name": "test2",
 				"id": 12
