@@ -14,11 +14,13 @@
 		// Extend the default options with the given options
 		var settings = $.extend({}, $.scuba.defaults, options);
 
-		var offline = false;
+		var offline = !!window.navigator.onLine;
 		var databaseIsReady = false;
 		var queueTimer = null;
 		var syncPaused = false;
 		var syncInProgress = false;
+		var offlineForced = false;
+		var log = [];
 
 		// This contains the original ajax method in order to make calls outside
 		var ajaxOnline = $.ajax;
@@ -235,14 +237,43 @@
 				// Get all data from table and then sort it via JS
 				// this is neccessary because IndexedDB does not provide a real WHERE clause
 				findAll(table).then(function (data) {
+
+					var filterFunction = function (searchAttribute, itemAttribute) {
+						if ($.isArray(itemAttribute)) {
+							// If item[i] is array, search in array
+							if (itemAttribute.indexOf(searchAttribute) <= -1) {
+								return false;
+							}
+						} else if (typeof searchAttribute === "string" || typeof itemAttribute === "string") {
+							if (("" + searchAttribute).toLowerCase() !== ("" + itemAttribute).toLowerCase()) {
+								return false;
+							}
+						} else {
+							if (searchAttribute !== itemAttribute) {
+								return false;
+							}
+						}
+
+						return true;
+					};
+
+
 					var filteredData = $.grep(data, function (item) {
-						for (var i in attrs) {
-							if (typeof attrs[i] === "string") {
-								if (attrs[i].toLowerCase() !== ("" + item[i]).toLowerCase()) {
+						var i, j, found = false;
+						for (i in attrs) {
+							found = false;
+							// if attrs[i] is an array, one of the array elements has to match
+							if ($.isArray(attrs[i])) {
+								for (j = 0; j < attrs[i].length; j++) {
+									if (filterFunction(attrs[i][j], item[i])) {
+										found = true;
+									}
+								}
+								if (!found) {
 									return false;
 								}
 							} else {
-								if (attrs[i] !== item[i]) {
+								if (!filterFunction(attrs[i], item[i])) {
 									return false;
 								}
 							}
@@ -446,7 +477,7 @@
 					console.error("error creating schema");
 				};
 
-				request.onblocked = function() {
+				request.onblocked = function () {
 					console.error("blocked creating schema");
 				};
 
@@ -458,25 +489,25 @@
 			var cleanUp = function () {
 				var deferred = $.Deferred();
 
-				if(db) {
+				if (db) {
 					db.close();
 				}
 
-				setTimeout(function() {
+				setTimeout(function () {
 					var request = indexedDB.deleteDatabase(dbName);
 
-					request.onsuccess = function() {
+					request.onsuccess = function () {
 						deferred.resolve(null);
 					};
 
-					request.onerror = function() {
+					request.onerror = function () {
 						deferred.resolve(null);
 					};
 
 					// In IE, the deletion of the DB might fail if a transaction is still open
 					// In this case, try again a bit later
-					request.onblocked = function() {
-						setTimeout(function() {
+					request.onblocked = function () {
+						setTimeout(function () {
 							request = indexedDB.deleteDatabase(dbName);
 						}, 10);
 					};
@@ -632,6 +663,10 @@
 					return null;
 				};
 			}
+		}
+
+		if(typeof settings.offlineForced !== "undefined") {
+			offlineForced = !!settings.offlineForced;
 		}
 
 		if (settings.namespace) {
@@ -874,6 +909,12 @@
 			// If this is true, ignore all further responses
 			var abort = false;
 
+			// is definitely offline?
+			if(isOffline()) {
+				_initLocalDB(null);
+				return;
+			}
+
 			// timeout after 10 seconds
 			setTimeout(function () {
 				if (!abort && openRoutes > 0) {
@@ -1115,13 +1156,21 @@
 				};
 			}
 
+			// automatically parse data to JSON if it is a string
+			if(typeof options.data === "string") {
+				options.data = JSON.parse(options.data);
+			}
+
 			// Get the fitting route
 			var fittingRoute = _getRoute(options.url, options.type);
 
 			if (!fittingRoute) {
 				// route not found, try online
+				log.push("Route not found: " + options.url);
 				return ajaxOnline.apply($, arguments);
 			}
+
+			log.push("Route found: " + options.url);
 
 
 			// Check for action, data and format functions in found route
@@ -1155,6 +1204,7 @@
 			if (options.type === "get" && options.data) {
 				scubaOptions.getParams = $.extend({}, scubaOptions.getParams, options.data);
 			}
+			log.push(reducedOptions);
 
 			var actionPromise = null;
 
@@ -1231,6 +1281,8 @@
 					}
 
 					data.then(function (data) {
+						log.push("Data response:");
+						log.push(data);
 						response = fittingRoute.route.format(data, scubaOptions);
 
 						jqXHR.readyState = 4;
@@ -1278,6 +1330,9 @@
 		};
 
 		var isOffline = function () {
+			if(offlineForced) {
+				return true;
+			}
 			return offline;
 		};
 
@@ -1421,7 +1476,7 @@
 				for (j = 0; j < tempParts.pathSegments.length; j++) {
 					// Replace !! with capturing group
 					if (tempParts.pathSegments[j] === "!!") {
-						tempParts.pathSegments[j] = "(\\w+|\\d+)";
+						tempParts.pathSegments[j] = "([^\\/;]+)";
 					}
 				}
 
@@ -1481,6 +1536,19 @@
 				Queue.queueError(0);
 				clearTimeout(queueTimer);
 				queueTimer = setTimeout(_workQueue, 10);
+			},
+			forceOffline: function(isForced) {
+				if(typeof isForced !== "undefined") {
+					offlineForced = !!isForced;
+				} else {
+					offlineForced = !offlineForced;
+				}
+				return offlineForced;
+			},
+			getLog: function() {
+				for(var i = 0; i<log.length; i++) {
+					console.log(log[i]);
+				}
 			}
 		};
 	};
@@ -1497,6 +1565,7 @@
 		routes: [],
 		namespace: "scuba",
 		noConflict: false,
+		offlineForced: false,
 
 		queueIfError: "continue", // continue, stop, function
 

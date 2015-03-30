@@ -45,6 +45,8 @@ QUnit.test("findById() works", function (assert) {
 QUnit.test("findByAttributes() works", function (assert) {
 	var done = assert.async();
 
+	var countDone = 0;
+
 	var scuba = $.scuba({
 		namespace: generateDatabase(),
 		noConflict: true,
@@ -54,15 +56,39 @@ QUnit.test("findByAttributes() works", function (assert) {
 			}
 		],
 		onofflineready: function (e, offlineReady) {
+
 			scuba.LocalDB.findByAttributes("users", {
 				is_admin: true,
 				gender: 0
 			}).then(function (items) {
 				assert.equal(items.length, 2, "two users are found in the local database for the specified attributes");
-				done();
-				scuba.cleanUp();
+				if(++countDone >= 3) {
+					done();
+					scuba.cleanUp();
+				}
+			});
+
+			scuba.LocalDB.findByAttributes("users", {
+				friends: 2
+			}).then(function (items) {
+				assert.equal(items.length, 2, "two users are found in the local database when searching in an array");
+				if(++countDone >= 3) {
+					done();
+					scuba.cleanUp();
+				}
+			});
+
+			scuba.LocalDB.findByAttributes("users", {
+				id: [1,2,3]
+			}).then(function (items) {
+				assert.equal(items.length, 3, "three users are found in the local database when searching with an array");
+				if(++countDone >= 3) {
+					done();
+					scuba.cleanUp();
+				}
 			});
 		}
+
 	});
 });
 
