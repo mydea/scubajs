@@ -14,7 +14,7 @@
 		// Extend the default options with the given options
 		var settings = $.extend({}, $.scuba.defaults, options);
 
-		var offline = !!window.navigator.onLine;
+		var offline = !window.navigator.onLine;
 		var databaseIsReady = false;
 		var queueTimer = null;
 		var syncPaused = false;
@@ -24,7 +24,6 @@
 
 		// This contains the original ajax method in order to make calls outside
 		var ajaxOnline = $.ajax;
-
 
 		var Queue = (function () {
 			var items = [];
@@ -114,6 +113,15 @@
 				return items;
 			};
 
+			/**
+			 * Clear all entries from the queue
+			 */
+			var clearQueue = function() {
+				items = [];
+				errorCount = 0;
+				_save();
+			};
+
 			var init = function (namespaceSet) {
 				if (typeof namespaceSet === "undefined") {
 					namespaceSet = "scuba_queue";
@@ -132,7 +140,8 @@
 				init: init,
 				getQueue: getQueue,
 				queueError: queueError,
-				hasError: hasError
+				hasError: hasError,
+				clearQueue: clearQueue
 			};
 		})();
 
@@ -165,7 +174,6 @@
 				var request = store.openCursor(keyRange);
 				var deferred = new $.Deferred();
 				var resultCache = [];
-
 
 				request.onsuccess = function (e) {
 					var result = e.target.result;
@@ -1006,7 +1014,7 @@
 
 			// Queue Error, handle it...
 			if (Queue.hasError()) {
-				if (settings.queueIfError.toLowerCase() === "continue") {
+				if (typeof settings.queueIfError === "string" && settings.queueIfError.toLowerCase() === "continue") {
 					_emitSyncEvent();
 					_emitQueueStatusEvent();
 					Queue.dequeue();
@@ -1035,7 +1043,12 @@
 				_emitSyncEvent();
 			}
 
-			ajaxOnline(Queue.first()).then(function (data) {
+			var queueNext = Queue.first();
+			if(typeof queueNext.data == "object") {
+				queueNext.data = JSON.stringify(queueNext.data);
+			}
+
+			ajaxOnline(queueNext).then(function (data) {
 				// Delete entry from queue, then continue with next entry
 				var item = Queue.dequeue();
 
@@ -1166,12 +1179,9 @@
 
 			if (!fittingRoute) {
 				// route not found, try online
-				log.push("Route not found: " + options.url);
+				log.push("Route not found: " + options.type.toUpperCase() + " " + options.url);
 				return ajaxOnline.apply($, arguments);
 			}
-
-			log.push("Route found: " + options.url);
-
 
 			// Check for action, data and format functions in found route
 			if (typeof fittingRoute.route.action !== "function") {
@@ -1185,10 +1195,10 @@
 				fittingRoute.route.format = settings.defaultFormat;
 			}
 
-			// remove functions from the options
+			// remove functions & context from the options
 			var reducedOptions = {};
 			for (var i in options) {
-				if (typeof options[i] !== "function") {
+				if (typeof options[i] !== "function" && i !== "context") {
 					reducedOptions[i] = options[i];
 				}
 			}
@@ -1204,7 +1214,6 @@
 			if (options.type === "get" && options.data) {
 				scubaOptions.getParams = $.extend({}, scubaOptions.getParams, options.data);
 			}
-			log.push(reducedOptions);
 
 			var actionPromise = null;
 
@@ -1281,8 +1290,13 @@
 					}
 
 					data.then(function (data) {
-						log.push("Data response:");
-						log.push(data);
+						var logRow = [
+							"Route found: " + options.type.toUpperCase() + " " + options.url,
+							reducedOptions,
+							data
+						];
+
+						log.push(logRow);
 						response = fittingRoute.route.format(data, scubaOptions);
 
 						jqXHR.readyState = 4;
@@ -1334,6 +1348,10 @@
 				return true;
 			}
 			return offline;
+		};
+
+		var isSyncing = function() {
+			return syncInProgress;
 		};
 
 		/**
@@ -1519,6 +1537,7 @@
 			ajax: ajax,
 			isOffline: isOffline,
 			isOfflineReady: isOfflineReady,
+			isSyncing: isSyncing,
 			pauseSync: pauseSync,
 			onofflineready: function (f) {
 				settings.onofflineready = f;
@@ -1547,6 +1566,10 @@
 			},
 			getLog: function() {
 				for(var i = 0; i<log.length; i++) {
+					if(typeof log[i] === "object") {
+						console.log.apply(console, log[i]);
+						continue;
+					}
 					console.log(log[i]);
 				}
 			}
