@@ -1044,7 +1044,7 @@
 			}
 
 			var queueNext = Queue.first();
-			if(typeof queueNext.data == "object") {
+			if(typeof queueNext.data === "object") {
 				queueNext.data = JSON.stringify(queueNext.data);
 			}
 
