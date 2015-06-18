@@ -1,0 +1,891 @@
+{
+    "project": {
+        "name": "scuba.js",
+        "description": "",
+        "version": "0.2.0",
+        "url": ""
+    },
+    "files": {
+        "src\\LocalDB.js": {
+            "name": "src\\LocalDB.js",
+            "modules": {},
+            "classes": {
+                "LocalDB": 1
+            },
+            "fors": {},
+            "namespaces": {}
+        },
+        "src\\Queue.js": {
+            "name": "src\\Queue.js",
+            "modules": {},
+            "classes": {
+                "Queue": 1
+            },
+            "fors": {},
+            "namespaces": {}
+        },
+        "src\\Scuba.js": {
+            "name": "src\\Scuba.js",
+            "modules": {},
+            "classes": {
+                "$.scuba": 1
+            },
+            "fors": {},
+            "namespaces": {}
+        }
+    },
+    "modules": {},
+    "classes": {
+        "LocalDB": {
+            "name": "LocalDB",
+            "shortname": "LocalDB",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "file": "src\\LocalDB.js",
+            "line": 1,
+            "description": "The LocalDB Object",
+            "params": [
+                {
+                    "name": "selector",
+                    "description": "The selector for an element.",
+                    "type": "String"
+                },
+                {
+                    "name": "context",
+                    "description": "The context for the search.",
+                    "type": "String",
+                    "optional": true
+                }
+            ]
+        },
+        "Queue": {
+            "name": "Queue",
+            "shortname": "Queue",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "file": "src\\Queue.js",
+            "line": 1,
+            "description": "The Queue object",
+            "params": [
+                {
+                    "name": "selector",
+                    "description": "The selector for an element.",
+                    "type": "String"
+                },
+                {
+                    "name": "context",
+                    "description": "The context for the search.",
+                    "type": "String",
+                    "optional": true
+                }
+            ]
+        },
+        "$.scuba": {
+            "name": "$.scuba",
+            "shortname": "$.scuba",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "file": "src\\Scuba.js",
+            "line": 1,
+            "description": "The scuba object is available on jQuery",
+            "params": [
+                {
+                    "name": "selector",
+                    "description": "The selector for an element.",
+                    "type": "String"
+                },
+                {
+                    "name": "context",
+                    "description": "The context for the search.",
+                    "type": "String",
+                    "optional": true
+                }
+            ]
+        }
+    },
+    "classitems": [
+        {
+            "file": "src\\LocalDB.js",
+            "line": 12,
+            "description": "Returns all entries of a table",
+            "itemtype": "method",
+            "name": "findAll",
+            "params": [
+                {
+                    "name": "table",
+                    "description": "The tablename",
+                    "type": "String"
+                }
+            ],
+            "return": {
+                "description": "List of entries",
+                "type": "Array"
+            },
+            "class": "LocalDB"
+        },
+        {
+            "file": "src\\LocalDB.js",
+            "line": 53,
+            "description": "Returns a single entry by its id",
+            "itemtype": "method",
+            "name": "findById",
+            "params": [
+                {
+                    "name": "table",
+                    "description": "The tablename",
+                    "type": "String"
+                },
+                {
+                    "name": "id",
+                    "description": "The id to search for. This is type-sensitive, so if your IDs are numbers, make sure to convert this to an integer, findById(\"table\", \"1\") will throw an error!",
+                    "type": "String"
+                }
+            ],
+            "return": {
+                "description": "A single entry",
+                "type": "Object"
+            },
+            "class": "LocalDB"
+        },
+        {
+            "file": "src\\LocalDB.js",
+            "line": 87,
+            "description": "Returns a list of entries of a table with matching attributes",
+            "itemtype": "method",
+            "name": "findByAttributes",
+            "params": [
+                {
+                    "name": "table",
+                    "description": "The tablename",
+                    "type": "String"
+                },
+                {
+                    "name": "attrs",
+                    "description": "The attributes to match by AND",
+                    "type": "Object"
+                }
+            ],
+            "return": {
+                "description": "List of matching entries",
+                "type": "Array"
+            },
+            "class": "LocalDB"
+        },
+        {
+            "file": "src\\LocalDB.js",
+            "line": 155,
+            "description": "Returns a list of entries of a table filtered by a custom method\nThis is just a shorthand for custom filtering.\nIt calls all(table) and filters through the",
+            "itemtype": "method",
+            "name": "findCustom",
+            "params": [
+                {
+                    "name": "table",
+                    "description": "The tablename",
+                    "type": "String"
+                },
+                {
+                    "name": "attrs",
+                    "description": "The attributes to match by AND",
+                    "type": "Object"
+                }
+            ],
+            "return": {
+                "description": "List of matching entries",
+                "type": "Array"
+            },
+            "class": "LocalDB"
+        },
+        {
+            "file": "src\\LocalDB.js",
+            "line": 185,
+            "description": "Insert a new entry into a table",
+            "itemtype": "method",
+            "name": "rowInsert",
+            "params": [
+                {
+                    "name": "table",
+                    "description": "The tablename",
+                    "type": "String"
+                },
+                {
+                    "name": "data",
+                    "description": "The data to insert into the table",
+                    "type": "Object"
+                },
+                {
+                    "name": "checkIfExists",
+                    "description": "If set to true, data.id will be checked for existance before inserting the row",
+                    "type": "Boolean",
+                    "optional": true
+                }
+            ],
+            "return": {
+                "description": "The inserted object",
+                "type": "Object"
+            },
+            "class": "LocalDB"
+        },
+        {
+            "file": "src\\LocalDB.js",
+            "line": 230,
+            "description": "Update an entry",
+            "itemtype": "method",
+            "name": "rowUpdate",
+            "params": [
+                {
+                    "name": "table",
+                    "description": "The tablename",
+                    "type": "String"
+                },
+                {
+                    "name": "id",
+                    "description": "The id of the entry",
+                    "type": "String"
+                },
+                {
+                    "name": "data",
+                    "description": "The data to update. Non-included fields are ignored",
+                    "type": "Object"
+                }
+            ],
+            "return": {
+                "description": "The updated object",
+                "type": "Object"
+            },
+            "class": "LocalDB"
+        },
+        {
+            "file": "src\\LocalDB.js",
+            "line": 283,
+            "description": "Delete an entry",
+            "itemtype": "method",
+            "name": "rowDelete",
+            "params": [
+                {
+                    "name": "table",
+                    "description": "The tablename",
+                    "type": "String"
+                },
+                {
+                    "name": "id",
+                    "description": "The id of the record to delete",
+                    "type": "String"
+                }
+            ],
+            "return": {
+                "description": "True if the entry was deleted, false if it didn't exist",
+                "type": "Boolean"
+            },
+            "class": "LocalDB"
+        },
+        {
+            "file": "src\\LocalDB.js",
+            "line": 324,
+            "description": "Initialises the database schema\nNote that this will drop an existing database - all data will be lost!\nA completely new database will be initialised based on the passed schema",
+            "access": "private",
+            "tagname": "",
+            "params": [
+                {
+                    "name": "schema",
+                    "description": "The schema after which the database should be created:\n[{table: \"table1\", schema: [\"field1\", \"field2\", \"field3\"]}, {table: \"table2\", schema: [\"field1\", \"field2\"]}]",
+                    "type": "Object"
+                }
+            ],
+            "class": "LocalDB"
+        },
+        {
+            "file": "src\\LocalDB.js",
+            "line": 362,
+            "description": "Drop the database",
+            "itemtype": "method",
+            "name": "cleanUp",
+            "class": "LocalDB"
+        },
+        {
+            "file": "src\\LocalDB.js",
+            "line": 397,
+            "itemtype": "method",
+            "name": "_createSchema",
+            "params": [
+                {
+                    "name": "schema",
+                    "description": ""
+                }
+            ],
+            "access": "private",
+            "tagname": "",
+            "class": "LocalDB"
+        },
+        {
+            "file": "src\\LocalDB.js",
+            "line": 451,
+            "itemtype": "method",
+            "name": "_initOffline",
+            "access": "private",
+            "tagname": "",
+            "class": "LocalDB"
+        },
+        {
+            "file": "src\\LocalDB.js",
+            "line": 480,
+            "access": "private",
+            "tagname": "",
+            "class": "LocalDB"
+        },
+        {
+            "file": "src\\LocalDB.js",
+            "line": 493,
+            "description": "Initialised the local database layer",
+            "itemtype": "method",
+            "name": "init",
+            "params": [
+                {
+                    "name": "schema",
+                    "description": "The schema for the database",
+                    "type": "Object"
+                }
+            ],
+            "class": "LocalDB"
+        },
+        {
+            "file": "src\\LocalDB.js",
+            "line": 507,
+            "description": "Set the namespace for the LocalDB",
+            "itemtype": "method",
+            "name": "setNamespace",
+            "params": [
+                {
+                    "name": "namespace",
+                    "description": ""
+                }
+            ],
+            "class": "LocalDB"
+        },
+        {
+            "file": "src\\LocalDB.js",
+            "line": 517,
+            "description": "Public API",
+            "class": "LocalDB"
+        },
+        {
+            "file": "src\\Queue.js",
+            "line": 12,
+            "description": "Save queue to LocalStorage",
+            "access": "private",
+            "tagname": "",
+            "class": "Queue"
+        },
+        {
+            "file": "src\\Queue.js",
+            "line": 20,
+            "description": "Load the queue from LocalStorage and initialise it",
+            "access": "private",
+            "tagname": "",
+            "class": "Queue"
+        },
+        {
+            "file": "src\\Queue.js",
+            "line": 43,
+            "description": "Adds a new element to the queue",
+            "itemtype": "method",
+            "name": "enqueue",
+            "params": [
+                {
+                    "name": "item",
+                    "description": "The item to add to the queue",
+                    "type": "Object"
+                }
+            ],
+            "class": "Queue"
+        },
+        {
+            "file": "src\\Queue.js",
+            "line": 53,
+            "description": "Returns the first queue item and removes it from the queue",
+            "itemtype": "method",
+            "name": "dequeue",
+            "return": {
+                "description": "The first queue item",
+                "type": "Object"
+            },
+            "class": "Queue"
+        },
+        {
+            "file": "src\\Queue.js",
+            "line": 65,
+            "description": "Returns the queue length",
+            "itemtype": "method",
+            "name": "length",
+            "return": {
+                "description": "The number of items in the queue",
+                "type": "Number"
+            },
+            "class": "Queue"
+        },
+        {
+            "file": "src\\Queue.js",
+            "line": 74,
+            "description": "Returns the first queue element or null if queue is empty",
+            "itemtype": "method",
+            "name": "first",
+            "return": {
+                "description": "The first queue item",
+                "type": "Object"
+            },
+            "class": "Queue"
+        },
+        {
+            "file": "src\\Queue.js",
+            "line": 83,
+            "description": "Returns the last queue element or null if queue is empty",
+            "itemtype": "method",
+            "name": "last",
+            "return": {
+                "description": "The last queue item",
+                "type": "Object"
+            },
+            "class": "Queue"
+        },
+        {
+            "file": "src\\Queue.js",
+            "line": 92,
+            "description": "Returns the whole queue",
+            "itemtype": "method",
+            "name": "getQueue",
+            "return": {
+                "description": "Array of queue items",
+                "type": "Array"
+            },
+            "class": "Queue"
+        },
+        {
+            "file": "src\\Queue.js",
+            "line": 101,
+            "description": "Clear all entries from the queue",
+            "itemtype": "method",
+            "name": "clearQueue",
+            "class": "Queue"
+        },
+        {
+            "file": "src\\Scuba.js",
+            "line": 103,
+            "description": "Emit the offlinestatuschange event on $(window)",
+            "access": "private",
+            "tagname": "",
+            "class": "$.scuba"
+        },
+        {
+            "file": "src\\Scuba.js",
+            "line": 114,
+            "description": "Emit the offlineready event on $(window)",
+            "access": "private",
+            "tagname": "",
+            "class": "$.scuba"
+        },
+        {
+            "file": "src\\Scuba.js",
+            "line": 125,
+            "description": "Emit the sync event on $(window)",
+            "access": "private",
+            "tagname": "",
+            "class": "$.scuba"
+        },
+        {
+            "file": "src\\Scuba.js",
+            "line": 150,
+            "description": "Initialises the local db with data provided by the down sync\nTODO: What to do when the local db is already initialised?",
+            "params": [
+                {
+                    "name": "object",
+                    "description": "data The data object provided by the down sync"
+                }
+            ],
+            "return": {
+                "description": "boolean TRUE if data is not empty, elsewise FALSE"
+            },
+            "access": "private",
+            "tagname": "",
+            "class": "$.scuba"
+        },
+        {
+            "file": "src\\Scuba.js",
+            "line": 185,
+            "params": [
+                {
+                    "name": "models",
+                    "description": ""
+                }
+            ],
+            "access": "private",
+            "tagname": "",
+            "class": "$.scuba"
+        },
+        {
+            "file": "src\\Scuba.js",
+            "line": 301,
+            "description": "Start the down sync\nTakes all specified routes from settings.downSyncRoutes, works through them and insertes the data into\nthe local database",
+            "access": "private",
+            "tagname": "",
+            "class": "$.scuba"
+        },
+        {
+            "file": "src\\Scuba.js",
+            "line": 381,
+            "description": "Work on the next queue item\nTry to send it to the server",
+            "access": "private",
+            "tagname": "",
+            "class": "$.scuba"
+        },
+        {
+            "file": "src\\Scuba.js",
+            "line": 485,
+            "description": "Initialise scuba\nMake general settings and start the down sync",
+            "access": "private",
+            "tagname": "",
+            "class": "$.scuba"
+        },
+        {
+            "file": "src\\Scuba.js",
+            "line": 512,
+            "description": "Sync the local database\nForces a down sync and the working of the queue",
+            "itemtype": "method",
+            "name": "sync",
+            "class": "$.scuba"
+        },
+        {
+            "file": "src\\Scuba.js",
+            "line": 524,
+            "description": "This function is used instead of the regular $.ajax() function\nIt will route the requests to the local db and perform any actions required there\nIt will also queue changing requests (post, put, delete) and send them to the server\nthis happens asychronously - results are returned from the local db immediatley, and changes are performed on\nthe server at some point later\nThe original ajax function (for external requests) is available via ajaxOnline",
+            "itemtype": "method",
+            "name": "ajax",
+            "return": {
+                "description": "promise A promise which can be resolved (which will contain the returned data)"
+            },
+            "class": "$.scuba"
+        },
+        {
+            "file": "src\\Scuba.js",
+            "line": 745,
+            "description": "Returns true if the LocalDB is ready",
+            "itemtype": "method",
+            "name": "isOfflineReady",
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "$.scuba"
+        },
+        {
+            "file": "src\\Scuba.js",
+            "line": 754,
+            "description": "Returns true if the client is currently offline",
+            "itemtype": "method",
+            "name": "isOffline",
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "$.scuba"
+        },
+        {
+            "file": "src\\Scuba.js",
+            "line": 767,
+            "description": "Returns true if scuba is currently syncing",
+            "itemtype": "method",
+            "name": "isSyncing",
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "$.scuba"
+        },
+        {
+            "file": "src\\Scuba.js",
+            "line": 776,
+            "description": "Pauses the syncing / working of the queue. If pause is not set, it is toggled",
+            "itemtype": "method",
+            "name": "pauseSync",
+            "params": [
+                {
+                    "name": "pause",
+                    "description": "TRUE if sync should be paused, FALSE if it should be continued",
+                    "type": "Boolean",
+                    "optional": true
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "$.scuba"
+        },
+        {
+            "file": "src\\Scuba.js",
+            "line": 800,
+            "description": "Clean everything up\nclear all local Databases",
+            "itemtype": "method",
+            "name": "cleanUp",
+            "class": "$.scuba"
+        },
+        {
+            "file": "src\\Scuba.js",
+            "line": 810,
+            "description": "Continue the working of the Queue. Discard eventual errors",
+            "itemtype": "method",
+            "name": "queueContinue",
+            "class": "$.scuba"
+        },
+        {
+            "file": "src\\Scuba.js",
+            "line": 820,
+            "description": "Force scuba to work in online or offline mode\nUseful for testing",
+            "itemtype": "method",
+            "name": "forceOffline",
+            "params": [
+                {
+                    "name": "isForced",
+                    "description": "Toggles if not set",
+                    "type": "Boolean",
+                    "optional": true
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "$.scuba"
+        },
+        {
+            "file": "src\\Scuba.js",
+            "line": 837,
+            "description": "Return the internal log",
+            "itemtype": "method",
+            "name": "getLog",
+            "class": "$.scuba"
+        },
+        {
+            "file": "src\\Scuba.js",
+            "line": 859,
+            "description": "This function merges two objects together\nBoth objects are expected to have the following syntax:\n{ model1: [...], model2: [...]}\n\nFor some reason, $.extend(true, data1, data2) does not seem to work as expected",
+            "params": [
+                {
+                    "name": "object",
+                    "description": "data1"
+                },
+                {
+                    "name": "object",
+                    "description": "data2"
+                }
+            ],
+            "return": {
+                "description": "object The merged object"
+            },
+            "access": "private",
+            "tagname": "",
+            "class": "$.scuba"
+        },
+        {
+            "file": "src\\Scuba.js",
+            "line": 895,
+            "description": "Parses an URL and separates it into its different parts",
+            "params": [
+                {
+                    "name": "string",
+                    "description": "uri The URL to parse"
+                }
+            ],
+            "return": {
+                "description": "object The different parts of the URL"
+            },
+            "access": "private",
+            "tagname": "",
+            "class": "$.scuba"
+        },
+        {
+            "file": "src\\Scuba.js",
+            "line": 932,
+            "description": "Takes a route and matches it against the defined routes in settings.routes\nParses the route into its parts and then tries to find a match - it also matches url segments,\nwhich are then available in the resulting object via result.params",
+            "params": [
+                {
+                    "name": "string",
+                    "description": "route The route to match"
+                },
+                {
+                    "name": "string",
+                    "description": "type The HTTP type to match: get, post, put or delete"
+                }
+            ],
+            "return": {
+                "description": "object The matched route and params or FALSE if no route is found"
+            },
+            "access": "private",
+            "tagname": "",
+            "class": "$.scuba"
+        },
+        {
+            "file": "src\\Scuba.js",
+            "line": 993,
+            "description": "Public API",
+            "class": "$.scuba"
+        }
+    ],
+    "warnings": [
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\LocalDB.js:53"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\LocalDB.js:87"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\LocalDB.js:155"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\LocalDB.js:185"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\LocalDB.js:230"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\LocalDB.js:283"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\Queue.js:53"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\Queue.js:65"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\Queue.js:74"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\Queue.js:83"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\Queue.js:92"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\Scuba.js:524"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\Scuba.js:745"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\Scuba.js:754"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\Scuba.js:767"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\Scuba.js:776"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\Scuba.js:820"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\Scuba.js:859"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\Scuba.js:895"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\Scuba.js:932"
+        },
+        {
+            "message": "Missing item type\nInitialises the database schema\nNote that this will drop an existing database - all data will be lost!\nA completely new database will be initialised based on the passed schema",
+            "line": " src\\LocalDB.js:324"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\LocalDB.js:480"
+        },
+        {
+            "message": "Missing item type\nPublic API",
+            "line": " src\\LocalDB.js:517"
+        },
+        {
+            "message": "Missing item type\nSave queue to LocalStorage",
+            "line": " src\\Queue.js:12"
+        },
+        {
+            "message": "Missing item type\nLoad the queue from LocalStorage and initialise it",
+            "line": " src\\Queue.js:20"
+        },
+        {
+            "message": "Missing item type\nEmit the offlinestatuschange event on $(window)",
+            "line": " src\\Scuba.js:103"
+        },
+        {
+            "message": "Missing item type\nEmit the offlineready event on $(window)",
+            "line": " src\\Scuba.js:114"
+        },
+        {
+            "message": "Missing item type\nEmit the sync event on $(window)",
+            "line": " src\\Scuba.js:125"
+        },
+        {
+            "message": "Missing item type\nInitialises the local db with data provided by the down sync\nTODO: What to do when the local db is already initialised?",
+            "line": " src\\Scuba.js:150"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\Scuba.js:185"
+        },
+        {
+            "message": "Missing item type\nStart the down sync\nTakes all specified routes from settings.downSyncRoutes, works through them and insertes the data into\nthe local database",
+            "line": " src\\Scuba.js:301"
+        },
+        {
+            "message": "Missing item type\nWork on the next queue item\nTry to send it to the server",
+            "line": " src\\Scuba.js:381"
+        },
+        {
+            "message": "Missing item type\nInitialise scuba\nMake general settings and start the down sync",
+            "line": " src\\Scuba.js:485"
+        },
+        {
+            "message": "Missing item type\nThis function merges two objects together\nBoth objects are expected to have the following syntax:\n{ model1: [...], model2: [...]}\n\nFor some reason, $.extend(true, data1, data2) does not seem to work as expected",
+            "line": " src\\Scuba.js:859"
+        },
+        {
+            "message": "Missing item type\nParses an URL and separates it into its different parts",
+            "line": " src\\Scuba.js:895"
+        },
+        {
+            "message": "Missing item type\nTakes a route and matches it against the defined routes in settings.routes\nParses the route into its parts and then tries to find a match - it also matches url segments,\nwhich are then available in the resulting object via result.params",
+            "line": " src\\Scuba.js:932"
+        },
+        {
+            "message": "Missing item type\nPublic API",
+            "line": " src\\Scuba.js:993"
+        }
+    ]
+}

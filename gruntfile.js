@@ -6,7 +6,13 @@ module.exports = function (grunt) {
 		uglify: {
 			options: {
 				mangle: false,
-				banner: "/*! \n * scuba.js \n * \n * author: Francesco Novy \n * licence: MIT license \n * https://github.com/mydea/scubajs \n */\n\n"
+				stripBanners: true,
+				banner: '/*!\t\n * <%= pkg.title || pkg.name %>' +
+				'\t\n * v<%= pkg.version %>' +
+				'\t\n * <%= grunt.template.today("yyyy-mm-dd") %>' +
+				'\t\n * <%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' +
+				'\t\n * Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>' +
+				'\t\n * Licensed <%= pkg.license %> \t\n */\t\n\t\n'
 			},
 			scubajs: {
 				src: 'scuba.js',
@@ -60,7 +66,39 @@ module.exports = function (grunt) {
 					"$": true
 				}
 			},
-			files: ['scuba.js']
+			files: ['src/*.js']
+		},
+
+		yuidoc: {
+			dist: {
+				name: '<%= pkg.name %>',
+				description: '<%= pkg.description %>',
+				version: '<%= pkg.version %>',
+				url: '<%= pkg.homepage %>',
+				options: {
+					paths: ['./src'],
+					"themedir": "node_modules/yuidoc-bootstrap-theme",
+					"helpers": ["node_modules/yuidoc-bootstrap-theme/helpers/helpers.js"],
+					outdir: 'docs/'
+				}
+			}
+		},
+		concat: {
+			options: {
+				stripBanners: true,
+				banner: '/*!\t\n * <%= pkg.title || pkg.name %>' +
+				'\t\n * v<%= pkg.version %>' +
+				'\t\n * <%= grunt.template.today("yyyy-mm-dd") %>' +
+				'\t\n * <%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' +
+				'\t\n * Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>' +
+				'\t\n * Licensed <%= pkg.license %> \t\n */' +
+				'\t\n\t\n(function ($, indexedDB) {\t\n\t\n',
+				footer: "\t\n}(jQuery, window.indexedDB));"
+			},
+			dist: {
+				src: ['src/Queue.js', 'src/LocalDB.js', 'src/Scuba.js'],
+				dest: 'scuba.js'
+			}
 		}
 
 	});
@@ -70,18 +108,23 @@ module.exports = function (grunt) {
 	grunt.loadNpmTasks('grunt-contrib-qunit');
 	grunt.loadNpmTasks('grunt-contrib-connect');
 	grunt.loadNpmTasks('grunt-contrib-jshint');
+	grunt.loadNpmTasks('grunt-contrib-yuidoc');
+	grunt.loadNpmTasks('grunt-contrib-concat');
 
 	// 4. Where we tell Grunt what to do when we type "grunt" into the terminal.
-	grunt.registerTask('default', ["uglify"]);
+	grunt.registerTask('default', ["build"]);
 
 	grunt.registerTask("build", [
+		"concat:dist",
 		"connect:test",
 		"jshint",
 		"qunit:all",
-		"uglify"
+		"uglify",
+		"yuidoc:dist"
 	]);
 
 	grunt.registerTask("test", [
+		"concat:dist",
 		"connect:test",
 		"jshint",
 		"qunit:all"
